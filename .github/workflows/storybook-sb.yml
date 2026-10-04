@@ -17,8 +17,9 @@ jobs:
       FIGMA_AT: ${{ secrets.STORYBOOK_SB_TVA_FIGMA_AT }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: storybook-sb
 
   dev:
@@ -30,8 +31,9 @@ jobs:
       FIGMA_AT: ${{ secrets.STORYBOOK_SB_TVA_FIGMA_AT }}
     with:
       GIT_BRANCH: deploy/dev
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: storybook-sb
 
   qa:
@@ -43,7 +45,8 @@ jobs:
       FIGMA_AT: ${{ secrets.STORYBOOK_SB_TVA_FIGMA_AT }}
     with:
       GIT_BRANCH: deploy/qa
-      IS_BETA: true
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
       APP_NAME: storybook-sb
 
   preview:
@@ -55,6 +58,8 @@ jobs:
       FIGMA_AT: ${{ secrets.STORYBOOK_SB_TVA_FIGMA_AT }}
     with:
       GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
       APP_NAME: storybook-sb
 
   live:
@@ -66,4 +71,6 @@ jobs:
       FIGMA_AT: ${{ secrets.STORYBOOK_SB_TVA_FIGMA_AT }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: storybook-sb

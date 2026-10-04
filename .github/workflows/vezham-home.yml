@@ -16,9 +16,10 @@ jobs:
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_TVA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
-      APP_NAME: home
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
+      APP_NAME: home
       BASE_API_URL: mock
       MOCK_API_URL: https://dev.home.mock.vezham.com
       APP_API_URL: https://dev.api.vezham.com
@@ -31,9 +32,10 @@ jobs:
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_DEV_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/dev
-      APP_NAME: home
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
+      APP_NAME: home
       BASE_API_URL: mock
       MOCK_API_URL: https://dev.home.mock.vezham.com
       APP_API_URL: https://dev.api.vezham.com
@@ -46,8 +48,9 @@ jobs:
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_QA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/qa
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
       APP_NAME: home
-      IS_BETA: true
       BASE_API_URL: mock
       MOCK_API_URL: https://dev.home.mock.vezham.com
       APP_API_URL: https://dev.api.vezham.com
@@ -60,6 +63,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_PREVIEW_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
       APP_NAME: home
       BASE_API_URL: mock
       MOCK_API_URL: https://dev.home.mock.vezham.com
@@ -73,6 +78,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_LIVE_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: home
       BASE_API_URL: mock
       MOCK_API_URL: https://dev.home.mock.vezham.com

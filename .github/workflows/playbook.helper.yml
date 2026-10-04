@@ -12,20 +12,19 @@ on:
       GIT_BRANCH:
         required: false
         type: string
-      APP_NAME:
+      APP_ENV:
+        required: true
         type: string
+      RELEASE_CHANNEL:
+        required: false
+        type: string
+        default: stable
       IS_DEBUG:
         required: false
         type: boolean
         default: false
-      IS_BETA:
-        required: false
-        type: boolean
-        default: false
-      IS_PREVIEW:
-        required: false
-        type: boolean
-        default: false
+      APP_NAME:
+        type: string
       # @vx/NOTE: custom-fields
 
       BASE_API_URL:
@@ -60,6 +59,12 @@ jobs:
         working-directory: ${{ env.ENTRY_POINT }}
 
     steps:
+      - name: Validate deployment settings
+        uses: vezham/vx-deployer/.github/actions/deployment/validate@timeline
+        with:
+          APP_ENV: ${{ inputs.APP_ENV }}
+          RELEASE_CHANNEL: ${{ inputs.RELEASE_CHANNEL }}
+
       - name: action | checkout | ${{ env.REPO }}@${{ env.BRANCH }}
         uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
         with:
@@ -74,9 +79,9 @@ jobs:
         with:
           directory: ${{ env.ENTRY_POINT }}
           envkey_V_APP_NAME: ${{ inputs.APP_NAME }}
+          envkey_V_APP_ENV: ${{ inputs.APP_ENV }}
+          envkey_V_RELEASE_CHANNEL: ${{ inputs.RELEASE_CHANNEL }}
           envkey_V_IS_DEBUG: ${{ inputs.IS_DEBUG }}
-          envkey_V_IS_BETA: ${{ inputs.IS_BETA }}
-          envkey_V_IS_PREVIEW: ${{ inputs.IS_PREVIEW }}
           envkey_V_BASE_API_URL: ${{ inputs.BASE_API_URL }}
           envkey_V_MOCK_API_URL: ${{ inputs.MOCK_API_URL }}
           envkey_V_APP_API_URL: ${{ inputs.APP_API_URL }}

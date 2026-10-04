@@ -37,8 +37,9 @@ jobs:
     uses: vezham/vx-fe-deployer/.github/workflows/apps-desktop.helper.yml@timeline
     with:
       GIT_BRANCH: timeline
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: vezham-one
       CONFIG_APP: '{"name":"Vezham One","category":"public.app-category.productivity","app_version":"1.0.5","build_version":"v0x25","pkg_bundle_id":"com.vezham","app_bundle_id":"suites.one","env":"tva","status":"stable"}'
       CONFIG_AUTHOR: '{"copyright":"✌️ Vezham © 2025","info":{"v0xauthor":"v0xfe-desktop-apps"}}'
@@ -54,8 +55,9 @@ jobs:
     uses: vezham/vx-fe-deployer/.github/workflows/apps-desktop.helper.yml@timeline
     with:
       GIT_BRANCH: deploy/dev
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: vezham-one
       CONFIG_APP: '{"name":"Vezham One","category":"public.app-category.productivity","app_version":"1.0.5","build_version":"v0x25","pkg_bundle_id":"com.vezham","app_bundle_id":"suites.one","env":"dev","status":"unstable"}'
       CONFIG_AUTHOR: '{"copyright":"✌️ Vezham © 2025","info":{"v0xauthor":"v0xfe-desktop-apps"}}'
@@ -71,7 +73,8 @@ jobs:
     uses: vezham/vx-fe-deployer/.github/workflows/apps-desktop.helper.yml@timeline
     with:
       GIT_BRANCH: deploy/qa
-      IS_BETA: true
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
       APP_NAME: vezham-one
       CONFIG_APP: '{"name":"Vezham One","category":"public.app-category.productivity","app_version":"1.0.5","build_version":"v0x25","pkg_bundle_id":"com.vezham","app_bundle_id":"suites.one","env":"qa","status":"alpha"}'
       CONFIG_AUTHOR: '{"copyright":"✌️ Vezham © 2025","info":{"v0xauthor":"v0xfe-desktop-apps"}}'
@@ -87,6 +90,8 @@ jobs:
     uses: vezham/vx-fe-deployer/.github/workflows/apps-desktop.helper.yml@timeline
     with:
       GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
       APP_NAME: vezham-one
       CONFIG_APP: '{"name":"Vezham One","category":"public.app-category.productivity","app_version":"1.0.5","build_version":"v0x25","pkg_bundle_id":"com.vezham","app_bundle_id":"suites.one","env":"preview","status":"beta"}'
       CONFIG_AUTHOR: '{"copyright":"✌️ Vezham © 2025","info":{"v0xauthor":"v0xfe-desktop-apps"}}'
@@ -102,6 +107,8 @@ jobs:
     uses: vezham/vx-fe-deployer/.github/workflows/apps-desktop.helper.yml@timeline
     with:
       GIT_BRANCH: deploy/prod
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: vezham-one
       CONFIG_APP: '{"name":"Vezham One","category":"public.app-category.productivity","app_version":"1.0.5","build_version":"v0x25","pkg_bundle_id":"com.vezham","app_bundle_id":"suites.one","env":"prod","status":"stable"}'
       CONFIG_AUTHOR: '{"copyright":"✌️ Vezham © 2025","info":{"v0xauthor":"v0xfe-desktop-apps"}}'

@@ -18,9 +18,10 @@ jobs:
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
-      APP_NAME: playground-app
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
+      APP_NAME: playground-app
 
   dev:
     name: dc/dev
@@ -31,9 +32,10 @@ jobs:
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: deploy/dev
-      APP_NAME: playground-app
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
+      APP_NAME: playground-app
 
   qa:
     name: dc/qa
@@ -44,8 +46,9 @@ jobs:
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: deploy/qa
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
       APP_NAME: playground-app
-      IS_BETA: true
 
   preview:
     name: dc/preview
@@ -56,6 +59,8 @@ jobs:
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
       APP_NAME: playground-app
 
   live:
@@ -67,4 +72,6 @@ jobs:
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: playground-app

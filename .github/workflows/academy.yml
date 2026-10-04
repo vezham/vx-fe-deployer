@@ -16,8 +16,9 @@ jobs:
       GCP_SA_KEY: ${{ secrets.ACADEMY_TVA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: academy
 
   dev:
@@ -28,8 +29,9 @@ jobs:
       GCP_SA_KEY: ${{ secrets.ACADEMY_DEV_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/dev
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: academy
 
   qa:
@@ -40,7 +42,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.ACADEMY_QA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/qa
-      IS_BETA: true
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
       APP_NAME: academy
 
   preview:
@@ -51,6 +54,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.ACADEMY_PREVIEW_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
       APP_NAME: academy
 
   live:
@@ -61,4 +66,6 @@ jobs:
       GCP_SA_KEY: ${{ secrets.ACADEMY_LIVE_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: academy

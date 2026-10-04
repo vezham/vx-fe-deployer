@@ -9,20 +9,19 @@ on:
       GIT_BRANCH:
         required: false
         type: string
-      APP_NAME:
+      APP_ENV:
+        required: true
         type: string
+      RELEASE_CHANNEL:
+        required: false
+        type: string
+        default: stable
       IS_DEBUG:
         required: false
         type: boolean
         default: false
-      IS_BETA:
-        required: false
-        type: boolean
-        default: false
-      IS_PREVIEW:
-        required: false
-        type: boolean
-        default: false
+      APP_NAME:
+        type: string
       # wjdlz/NOTE: custom-fields
 
       CONFIG_APP:
@@ -42,6 +41,8 @@ on:
         type: string
 
 env:
+  V_APP_ENV: ${{ inputs.APP_ENV }}
+  V_RELEASE_CHANNEL: ${{ inputs.RELEASE_CHANNEL }}
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-desktop' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ./v/bin/ci
@@ -76,6 +77,12 @@ jobs:
       contents: write
 
     steps:
+      - name: Validate deployment settings
+        uses: vezham/vx-deployer/.github/actions/deployment/validate@timeline
+        with:
+          APP_ENV: ${{ inputs.APP_ENV }}
+          RELEASE_CHANNEL: ${{ inputs.RELEASE_CHANNEL }}
+
       - name: action | checkout | ${{ env.REPO }}@${{ env.BRANCH }}
         uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
         with:

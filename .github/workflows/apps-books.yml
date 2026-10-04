@@ -16,9 +16,10 @@ jobs:
       GCP_SA_KEY: ${{ secrets.APPS_BOOKS_TVA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
-      APP_NAME: books
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
+      APP_NAME: books
 
   dev:
     name: dc/dev
@@ -28,9 +29,10 @@ jobs:
       GCP_SA_KEY: ${{ secrets.APPS_BOOKS_DEV_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/dev
-      APP_NAME: books
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
+      APP_NAME: books
 
   qa:
     name: dc/qa
@@ -40,8 +42,9 @@ jobs:
       GCP_SA_KEY: ${{ secrets.APPS_BOOKS_QA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/qa
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
       APP_NAME: books
-      IS_BETA: true
 
   preview:
     name: dc/preview
@@ -51,6 +54,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.APPS_BOOKS_PREVIEW_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
       APP_NAME: books
 
   live:
@@ -61,4 +66,6 @@ jobs:
       GCP_SA_KEY: ${{ secrets.APPS_BOOKS_LIVE_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: books

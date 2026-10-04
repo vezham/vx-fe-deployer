@@ -16,8 +16,9 @@ jobs:
       GCP_SA_KEY: ${{ secrets.CHAT_WIDGET_TVA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: chat_widget
       APP_API_URL: https://dev.api.vezham.com
       WIDGET_URL: https://dev.widgets.vezham.com
@@ -30,8 +31,9 @@ jobs:
       GCP_SA_KEY: ${{ secrets.CHAT_WIDGET_DEV_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/dev
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: chat_widget
       APP_API_URL: https://dev.api.vezham.com
       WIDGET_URL: https://dev.widgets.vezham.com
@@ -44,7 +46,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.CHAT_WIDGET_QA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/qa
-      IS_BETA: true
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
       APP_NAME: chat_widget
       APP_API_URL: https://qa.api.vezham.com
       WIDGET_URL: https://qa.widgets.vezham.com
@@ -57,6 +60,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.CHAT_WIDGET_PREVIEW_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
       APP_NAME: chat_widget
       APP_API_URL: https://dev.api.vezham.com
       WIDGET_URL: https://preview.widgets.vezham.com
@@ -79,6 +84,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.CHAT_WIDGET_LIVE_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: chat_widget
       APP_API_URL: https://us.api.vezham.com
       WIDGET_URL: https://us.widgets.vezham.com
@@ -91,6 +98,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.CHAT_WIDGET_LIVE_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: chat_widget
       APP_API_URL: https://eu.api.vezham.com
       WIDGET_URL: https://eu.widgets.vezham.com
@@ -103,6 +112,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.CHAT_WIDGET_LIVE_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: chat_widget
       APP_API_URL: https://in.api.vezham.com
       WIDGET_URL: https://in.widgets.vezham.com
@@ -115,6 +126,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.CHAT_WIDGET_LIVE_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: chat_widget
       APP_API_URL: https://au.api.vezham.com
       WIDGET_URL: https://au.widgets.vezham.com

@@ -16,6 +16,7 @@ jobs:
       VERCEL_SA_KEY: ${{ secrets.POLICY_CENTER_MOCK_TVA_VERCEL_SA_KEY }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: policy_center-mock

@@ -16,8 +16,9 @@ jobs:
       GCP_SA_KEY: ${{ secrets.BUSINESS_TVA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: business
       APP_API_URL: https://dev.api.vezham.com
       APP_IAM_URL: https://preview.iam.vezham.com
@@ -36,8 +37,9 @@ jobs:
       GCP_SA_KEY: ${{ secrets.BUSINESS_DEV_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/dev
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
       IS_DEBUG: true
-      IS_BETA: true
       APP_NAME: business
       APP_API_URL: https://dev.api.vezham.com
       APP_IAM_URL: https://dev.iam.vezham.com
@@ -56,7 +58,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.BUSINESS_QA_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/qa
-      IS_BETA: true
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
       APP_NAME: business
       APP_API_URL: https://qa.api.vezham.com
       APP_IAM_URL: https://qa.iam.vezham.com
@@ -75,6 +78,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.BUSINESS_PREVIEW_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
       APP_NAME: business
       APP_API_URL: https://dev.api.vezham.com
       APP_IAM_URL: https://preview.iam.vezham.com
@@ -93,6 +98,8 @@ jobs:
       GCP_SA_KEY: ${{ secrets.BUSINESS_LIVE_GCP_SA_KEY }}
     with:
       GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
       APP_NAME: business
       APP_API_URL: https://api.vezham.com
       APP_IAM_URL: https://iam.vezham.com
