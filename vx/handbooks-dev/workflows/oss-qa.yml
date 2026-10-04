@@ -1,0 +1,150 @@
+# @vx/INFO: @vx/ci
+name: QA
+
+on:
+  schedule:
+    - cron: '30 22 * * 2,5' # every Wed, Sat at 04:00 AM IST
+  workflow_dispatch:
+  push:
+    branches:
+      - timeline
+      - feat/**
+    # paths:
+    #   - '.github/workflows/qa.yml'
+    #   - '.changeset/**'
+    #   - 'packages/**'
+
+run-name: >
+  🧪 QA • ${{
+      github.event_name == 'schedule' && '🕒 Scheduled' ||
+      github.event_name == 'workflow_dispatch' && '⚡ Trails' ||
+      github.event.head_commit.message ||
+      github.event.workflow_run && github.event.workflow_run.head_commit.message ||
+      github.ref_name
+  }} 
+  - by @${{ github.actor || 'vx/ci' }}
+
+concurrency:
+  group: qa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+  # timeout-minutes: 10
+
+permissions:
+  checks: write # check runs
+  contents: write # commits, tags, pushes
+  pull-requests: write # PR comments
+
+env:
+  REPO: ${{ github.repository || 'vezham/heroui-v3' }}
+  BRANCH: ${{ github.ref_name || 'timeline' }}
+  ACTOR: ${{ github.actor || 'vx/ci' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧰 Checkout • ${{ env.REPO }}@${{ env.BRANCH }}
+        uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          GIT_BRANCH: ${{ env.BRANCH }}
+
+      - name: 🟠 · 🧩 Setup Node & pnpm
+        uses: vezham/vx-deployer/.github/actions/common/setup-install@timeline
+
+      - name: 🔵 · 🏗️ Build
+        # id: build
+        # continue-on-error: false
+        shell: bash
+        run: |
+          pnpm build || { echo "❌ Build failed"; exit 1; }
+
+  types:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧰 Checkout • ${{ env.REPO }}@${{ env.BRANCH }}
+        uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          GIT_BRANCH: ${{ env.BRANCH }}
+
+      - name: 🟠 · 🧩 Setup Node & pnpm
+        uses: vezham/vx-deployer/.github/actions/common/setup-install@timeline
+
+      - name: 🔵 · 🧠 Typecheck
+        shell: bash
+        run: |
+          pnpm typecheck
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧰 Checkout • ${{ env.REPO }}@${{ env.BRANCH }}
+        uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          GIT_BRANCH: ${{ env.BRANCH }}
+
+      - name: 🟠 · 🧩 Setup Node & pnpm
+        uses: vezham/vx-deployer/.github/actions/common/setup-install@timeline
+
+      - name: 🔵 · 🧹 Lint • ESLint
+        shell: bash
+        run: |
+          pnpm lint
+
+  prettier:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧰 Checkout • ${{ env.REPO }}@${{ env.BRANCH }}
+        uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          GIT_BRANCH: ${{ env.BRANCH }}
+
+      - name: 🟠 · 🧩 Setup Node & pnpm
+        uses: vezham/vx-deployer/.github/actions/common/setup-install@timeline
+
+      - name: 🔵 · 🎨 Format • Prettier
+        shell: bash
+        run: |
+          pnpm @vx/cli:format-check
+
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧰 Checkout • ${{ env.REPO }}@${{ env.BRANCH }}
+        uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          GIT_BRANCH: ${{ env.BRANCH }}
+
+      - name: 🟠 · 🧩 Setup Node & pnpm
+        uses: vezham/vx-deployer/.github/actions/common/setup-install@timeline
+
+      - name: 🔵 · 🧪 Test • Vitest
+        shell: bash
+        run: |
+          pnpm test --passWithNoTests
+
+  summary:
+    if: always()
+    needs: [build, types, lint, prettier, tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧾 QA Summary
+        uses: vezham/vx-deployer/.github/actions/common/summary-qa@timeline
+        with:
+          actor: ${{ env.ACTOR }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          build_result: ${{ needs.build.result }}
+          types_result: ${{ needs.types.result }}
+          lint_result: ${{ needs.lint.result }}
+          prettier_result: ${{ needs.prettier.result }}
+          tests_result: ${{ needs.tests.result }}

@@ -90,6 +90,8 @@ jobs:
 
       - name: action | node & pnpm
         uses: vezham/vx-deployer/.github/actions/common/setup-install@timeline
+        with:
+          HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
 
       - name: action | gen-build
         uses: vezham/vx-deployer/.github/actions/apps-desktop/gen-build@timeline

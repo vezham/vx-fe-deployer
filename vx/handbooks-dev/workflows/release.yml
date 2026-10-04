@@ -1,0 +1,108 @@
+# @vx/INFO: @vx/ci
+name: release
+
+on:
+  schedule:
+    - cron: '30 23 * * 2,5' # every Wed, Sat at 05:00 AM IST
+  workflow_dispatch:
+    inputs:
+      version:
+        required: false
+        type: string
+        description: version to publish
+        default: ''
+      args:
+        required: false
+        type: string
+        description: options to args
+        default: ''
+  release:
+    types: [published]
+
+run-name: >
+  🚀 Release • ${{
+    github.event_name == 'schedule'
+      && '🕒 Scheduled'
+      || github.event_name == 'workflow_dispatch'
+      && github.event.inputs.version == ''
+      && '⚡ Trails'
+      || github.event.inputs.version
+      && format('📦 {0}', github.event.inputs.version)
+      || github.event.head_commit.message
+      || github.event.workflow_run
+      && github.event.workflow_run.head_commit.message
+      || github.ref_name
+  }}
+  - by @${{ github.actor || 'vx/ci' }}
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  # cancel-in-progress: true
+  # timeout-minutes: 10
+
+permissions:
+  id-token: write # npm provenance
+  checks: write # check runs
+  contents: write # commits, tags, pushes
+  pull-requests: write # PR comments
+
+env:
+  REPO: ${{ github.repository }}
+  BRANCH: ${{ github.ref_name }}
+  ACTOR: ${{ github.actor || 'vx/ci' }}
+  # NX_NO_CLOUD: true
+  # VX_NAME: '@vx/fe-kit'
+  # VX_SKIP: '@vx/fe-kit'
+  NPM_TOKEN: ${{ secrets.VX_DEPLOYER_NPM }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30 # 500
+
+    steps:
+      - name: 🟠 · 🧰 Checkout • ${{ env.REPO }}@${{ env.BRANCH }}
+        uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          GIT_BRANCH: ${{ env.BRANCH }}
+
+      - name: 🟠 · 🧩 Setup Node & pnpm
+        uses: vezham/vx-deployer/.github/actions/common/setup-install-npm@timeline
+        with:
+          NPM_TOKEN: ${{ secrets.VX_DEPLOYER_NPM }}
+
+      - name: 🔵 · 🏗️ Build
+        # id: build
+        continue-on-error: false
+        shell: bash
+        run: |
+          pnpm nx run @vx:@vx-ci/build || { echo "❌ Build failed"; exit 1; }
+
+      - name: 🟠 · 📦 NX • NPM Release
+        uses: vezham/vx-deployer/.github/actions/nx/release@timeline
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.VX_DEPLOYER_NPM }}
+          NPM_PROVENANCE: true
+          version: ${{ github.event.inputs.version }}
+          args: ${{ github.event.inputs.args }}
+
+      - name: 🟠 · ⛭ NX • Post Ops
+        if: always()
+        uses: vezham/vx-deployer/.github/actions/nx/post-ops@timeline
+
+  summary:
+    if: always()
+    needs: [release]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧾 Release Summary
+        uses: vezham/vx-deployer/.github/actions/common/summary-release@timeline
+        with:
+          actor: ${{ env.ACTOR }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ github.event.inputs.version }}
+          args: ${{ github.event.inputs.args }}
+          release_result: ${{ needs.release.result }}

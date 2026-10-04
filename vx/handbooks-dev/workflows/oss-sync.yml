@@ -1,0 +1,163 @@
+# @vx/INFO: @vx/ci
+name: sync with upstream
+
+on:
+  schedule:
+    - cron: '0 23 * * 2,5' # every Wed, Sat at 04:30 AM IST
+  workflow_dispatch:
+  push:
+    branches: [timeline, v3]
+    paths:
+      - '.github/workflows/sync.yml'
+    #   - ".changeset/**"
+    #   - "packages/**"
+
+run-name: >
+  🔄 Sync • ${{
+      github.event_name == 'schedule' && '🕒 Scheduled' ||
+      github.event_name == 'workflow_dispatch' && '⚡ Trails' ||
+      github.event.head_commit.message ||
+      github.event.workflow_run.head_commit.message ||
+      github.ref_name
+  }}
+  - by @${{ github.actor || 'vx/ci' }}
+
+concurrency:
+  group: sync-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+  # timeout-minutes: 10
+
+permissions:
+  checks: write
+  contents: write
+  pull-requests: write
+
+env:
+  REPO: ${{ github.repository || 'vezham/heroui-v3' }}
+  BRANCH: ${{ github.ref_name || 'timeline' }}
+  ACTOR: ${{ github.actor || 'vx/ci' }}
+  UPSTREAM_REPO: heroui-inc/heroui
+  UPSTREAM_BRANCH: v3
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧰 Checkout • ${{ env.REPO }}@${{ env.BRANCH }}
+        uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          GIT_BRANCH: ${{ env.BRANCH }}
+
+      - name: 🟠 · 👤 Git User
+        uses: vezham/vx-deployer/.github/actions/common/setup-git-user@timeline
+
+      - name: 🔵 · 🔗 Ensure Upstream Remote
+        run: |
+          if git remote get-url upstream &>/dev/null; then
+            echo "✅ Upstream already exists."
+          else
+            echo "Adding upstream: https://github.com/${{ env.UPSTREAM_REPO }}.git"
+            git remote add upstream https://github.com/${{ env.UPSTREAM_REPO }}.git
+          fi
+          git fetch upstream ${{ env.UPSTREAM_BRANCH }} || true
+          git fetch origin ${{ env.BRANCH }} || true
+
+      - name: 🔵 · 🧩 Debug Refs
+        run: |
+          echo "=== Remotes ==="
+          git remote -v
+          echo "=== Branches ==="
+          git show-ref || true
+
+      - name: 🔵 · 🪄 Prepare Sync Branch
+        run: |
+          SYNC_BRANCH="sync/${{ env.BRANCH }}"
+          echo "🪄 Preparing '${SYNC_BRANCH}'..."
+
+          # Prefer origin branch if it exists
+          if git show-ref --verify --quiet "refs/remotes/origin/${{ env.BRANCH }}"; then
+            echo "✅ Found origin/${{ env.BRANCH }}, creating sync branch from it."
+            git checkout -B "${SYNC_BRANCH}" "origin/${{ env.BRANCH }}"
+          else
+            echo "⚠️ origin/${{ env.BRANCH }} not found, creating from upstream/${{ env.UPSTREAM_BRANCH }}"
+            git checkout -B "${SYNC_BRANCH}" "upstream/${{ env.UPSTREAM_BRANCH }}"
+          fi
+
+          # Merge upstream safely
+          if git show-ref --verify --quiet "refs/remotes/upstream/${{ env.UPSTREAM_BRANCH }}"; then
+            git merge "upstream/${{ env.UPSTREAM_BRANCH }}" --no-edit || true
+          else
+            echo "⚠️ upstream/${{ env.UPSTREAM_BRANCH }} not found. Skipping merge."
+          fi
+
+      - name: 🔵 · 🔁 Retry Merge on Conflict
+        run: |
+          if ! git diff --quiet --merge-base upstream/${{ env.UPSTREAM_BRANCH }} origin/${{ env.BRANCH }}; then
+            echo "⚠️ Merge conflict detected. Retrying with rebase..."
+            git rebase upstream/${{ env.UPSTREAM_BRANCH }} || git rebase --abort
+          fi
+
+      - name: 🔵 · 🧹 Skip PR if No Changes
+        run: |
+          if git diff --quiet; then
+            echo "✅ No changes to sync. Skipping PR creation."
+            echo "SKIP_PR=true" >> $GITHUB_ENV
+          else
+            echo "🟢 Changes detected — continuing."
+          fi
+
+      - name: 🔵 · 📤 Push Sync Branch
+        if: env.SKIP_PR != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SYNC_BRANCH="sync/${{ env.BRANCH }}"
+
+          echo "🪄 Ensuring remote branch '${SYNC_BRANCH}' exists..."
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ env.REPO }}.git"
+
+          echo "🪄 Pushing '${SYNC_BRANCH}' to origin..."
+          git push origin "${SYNC_BRANCH}:${SYNC_BRANCH}" || git push -u origin "${SYNC_BRANCH}"
+
+      - name: 🟠 · 🚀 Create / Update Pull Request
+        if: env.SKIP_PR != 'true'
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: sync/${{ env.BRANCH }}
+          base: ${{ env.BRANCH }}
+          title: "🔄 Sync upstream '${{ env.UPSTREAM_BRANCH }}' → '${{ env.BRANCH }}'"
+          body: |
+            This PR merges the latest changes from:
+            - Upstream: `${{ env.UPSTREAM_REPO }}`
+            - Branch: `${{ env.UPSTREAM_BRANCH }}`
+          commit-message: 'chore(sync): merge upstream/${{ env.UPSTREAM_BRANCH }} into ${{ env.BRANCH }}'
+          delete-branch: false
+          draft: false
+          # author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          # committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+      # - name: 🧪 Wait for checks before auto-merge
+      #   if: steps.cpr.outputs.pull-request-number != ''
+      #   uses: juliangruber/wait-for-checks-action@v1
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     ref: refs/pull/${{ steps.cpr.outputs.pull-request-number }}/merge
+      #     check-regexp: "build|test|lint"
+      #     timeout: 900 # 15 minutes
+
+      - name: 🟠 · ⛭ Enable Auto-Merge
+        if: steps.cpr.outputs.pull-request-number != '' && env.SKIP_PR != 'true'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: merge
+
+      - name: 🔵 · 🧾 Sync Summary
+        run: |
+          echo "✅ Sync completed for '${{ env.BRANCH }}'"
+          git log -1 --oneline

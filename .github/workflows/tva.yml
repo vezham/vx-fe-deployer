@@ -43,6 +43,8 @@ jobs:
 
       - name: action | node & pnpm
         uses: vezham/vx-deployer/.github/actions/common/setup-install@timeline
+        with:
+          HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
 
   format:
     name: Format (pkg,prettier) & Lint (eslint,stylelint)
@@ -57,6 +59,8 @@ jobs:
 
       - name: action | node & pnpm
         uses: vezham/vx-deployer/.github/actions/common/setup-install@timeline
+        with:
+          HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
 
       - name: cli | format
         run: pnpm format

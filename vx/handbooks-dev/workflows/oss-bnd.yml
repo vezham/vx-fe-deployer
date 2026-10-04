@@ -1,0 +1,105 @@
+# @vx/INFO: @vx/ci
+name: BnD
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [closed]
+  push:
+    branches: [timeline]
+    paths:
+      - '.github/workflows/bnd.yml'
+      - '.changeset/**'
+      - 'packages/**'
+
+run-name: >
+  📦 BnD • ${{
+      github.event_name == 'schedule' && '🕒 Scheduled' ||
+      github.event_name == 'workflow_dispatch' && '⚡ Trails' ||
+      github.event_name == 'pull_request' &&
+        format(
+          '🔀 PR #{0} {1} • {2}',
+          github.event.pull_request.number,
+          github.event.pull_request.merged && '✅' || '❌',
+          github.event.pull_request.title
+        ) ||
+      github.event.head_commit.message ||
+      github.event.workflow_run && github.event.workflow_run.head_commit.message ||
+      github.ref_name
+  }}
+  - by @${{ github.actor || 'vx/ci' }}
+
+concurrency:
+  group: bnd-${{ github.workflow }}-${{ github.ref }}
+  # cancel-in-progress: true
+  # timeout-minutes: 10
+
+permissions:
+  id-token: write # npm provenance
+  checks: write # check runs
+  contents: write # commits, tags, pushes
+  pull-requests: write # PR comments
+
+env:
+  REPO: ${{ github.repository || 'vezham/heroui-v3' }}
+  BRANCH: ${{ github.ref_name || 'timeline' }}
+  ACTOR: ${{ github.actor || 'vx/ci' }}
+  NPM_TOKEN: ${{ secrets.VX_DEPLOYER_NPM }}
+
+jobs:
+  bnd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 500
+    outputs:
+      version: ${{ steps.release.outputs.version || '' }}
+      pr_number: ${{ github.event_name == 'pull_request' && github.event.pull_request.number || '' }}
+      pr_title: ${{ github.event_name == 'pull_request' && github.event.pull_request.title || '' }}
+      pr_merged: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged || '' }}
+
+    steps:
+      - name: 🟠 · 🧰 Checkout • ${{ env.REPO }}@${{ env.BRANCH }}
+        uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          GIT_BRANCH: ${{ env.BRANCH }}
+
+      - name: 🟠 · 🧩 Setup Node & pnpm
+        uses: vezham/vx-deployer/.github/actions/common/setup-install-npm@timeline
+        with:
+          NPM_TOKEN: ${{ secrets.VX_DEPLOYER_NPM }}
+
+      - name: 🔵 · 🏗️ Build
+        if: github.event_name == 'pull_request'
+        # id: build
+        continue-on-error: false
+        shell: bash
+        run: |
+          pnpm build || { echo "❌ Build failed"; exit 1; }
+
+      - name: 🟠 · 📦 Changesets • NPM Release
+        id: release
+        uses: vezham/vx-deployer/.github/actions/changesets/release@timeline
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.VX_DEPLOYER_NPM }}
+
+      - name: 🟠 · 🧾 LOG
+        if: always()
+        uses: vezham/vx-deployer/.github/actions/common/log-artifact@timeline
+
+  summary:
+    if: always()
+    needs: [bnd]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🟠 · 🧾 BnD Summary
+        uses: vezham/vx-deployer/.github/actions/common/summary-bnd@timeline
+        with:
+          actor: ${{ env.ACTOR }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ needs.bnd.outputs.version }}
+          release_result: ${{ needs.bnd.result }}
+          pr_number: ${{ needs.bnd.outputs.pr_number }}
+          pr_title: ${{ needs.bnd.outputs.pr_title }}
+          pr_merged: ${{ needs.bnd.outputs.pr_merged }}
