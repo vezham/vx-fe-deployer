@@ -2,6 +2,19 @@ name: playground-app | deployer
 
 on:
   workflow_call:
+    secrets:
+      HEROUI_AUTH_TOKEN:
+        required: true
+      PLAYGROUND_DOCS_TVA_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_APP_DEV_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_APP_QA_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_APP_PREVIEW_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_APP_LIVE_GCP_SA_KEY:
+        required: false
     inputs:
       CALLER:
         required: true
