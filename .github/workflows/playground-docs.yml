@@ -2,6 +2,19 @@ name: playground-docs | deployer
 
 on:
   workflow_call:
+    secrets:
+      HEROUI_AUTH_TOKEN:
+        required: true
+      PLAYGROUND_DOCS_TVA_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_DOCS_DEV_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_DOCS_QA_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_DOCS_PREVIEW_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_DOCS_LIVE_GCP_SA_KEY:
+        required: false
     inputs:
       CALLER:
         required: true
