@@ -1,0 +1,90 @@
+name: play-demo | deployer
+
+on:
+  workflow_call:
+    secrets:
+      HEROUI_AUTH_TOKEN:
+        required: true
+      PLAYGROUND_DOCS_TVA_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_APP_DEV_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_APP_QA_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_APP_PREVIEW_GCP_SA_KEY:
+        required: false
+      PLAYGROUND_APP_LIVE_GCP_SA_KEY:
+        required: false
+    inputs:
+      CALLER:
+        required: true
+        type: string
+
+jobs:
+  tva:
+    name: dc/TVA
+    if: ${{ inputs.CALLER == '-timeline' || inputs.CALLER == 'next' || inputs.CALLER == '-scheduler' }}
+    uses: vezham/vx-fe-deployer/.github/workflows/play-demo.helper.yml@timeline
+    secrets:
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
+      # GCP_SA_KEY: ${{ secrets.PLAYGROUND_APP_TVA_GCP_SA_KEY }}
+      HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
+    with:
+      GIT_BRANCH: ${{ inputs.CALLER }}
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
+      IS_DEBUG: true
+      APP_NAME: play-demo
+
+  dev:
+    name: dc/dev
+    if: ${{ inputs.CALLER == 'deploy/dev' || inputs.CALLER == '-scheduler' }}
+    uses: vezham/vx-fe-deployer/.github/workflows/play-demo.helper.yml@timeline
+    secrets:
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_APP_DEV_GCP_SA_KEY }}
+      HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
+    with:
+      GIT_BRANCH: deploy/dev
+      APP_ENV: dev
+      RELEASE_CHANNEL: beta
+      IS_DEBUG: true
+      APP_NAME: play-demo
+
+  qa:
+    name: dc/qa
+    if: ${{ inputs.CALLER == 'deploy/qa' || inputs.CALLER == '-scheduler' }}
+    uses: vezham/vx-fe-deployer/.github/workflows/play-demo.helper.yml@timeline
+    secrets:
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_APP_QA_GCP_SA_KEY }}
+      HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
+    with:
+      GIT_BRANCH: deploy/qa
+      APP_ENV: qa
+      RELEASE_CHANNEL: beta
+      APP_NAME: play-demo
+
+  preview:
+    name: dc/preview
+    if: ${{ inputs.CALLER == 'deploy/preview' || inputs.CALLER == '-scheduler' }}
+    uses: vezham/vx-fe-deployer/.github/workflows/play-demo.helper.yml@timeline
+    secrets:
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_APP_PREVIEW_GCP_SA_KEY }}
+      HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
+    with:
+      GIT_BRANCH: deploy/preview
+      APP_ENV: preview
+      RELEASE_CHANNEL: stable
+      APP_NAME: play-demo
+
+  live:
+    name: dc/live
+    if: ${{ inputs.CALLER == 'deploy/live' || inputs.CALLER == '-scheduler' }}
+    uses: vezham/vx-fe-deployer/.github/workflows/play-demo.helper.yml@timeline
+    secrets:
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_APP_LIVE_GCP_SA_KEY }}
+      HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
+    with:
+      GIT_BRANCH: deploy/live
+      APP_ENV: production
+      RELEASE_CHANNEL: stable
+      APP_NAME: play-demo
