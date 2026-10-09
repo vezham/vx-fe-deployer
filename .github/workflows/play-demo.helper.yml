@@ -35,7 +35,7 @@ env:
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   ENTRY_POINT: ./apps/demo
   VX_APP_PATH: apps/demo
-  VX_APP_NAME: play-demo
+  VX_APP_NAME: demo
 
 jobs:
   bnd:
