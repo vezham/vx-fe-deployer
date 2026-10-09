@@ -24,7 +24,7 @@ jobs:
   tva:
     name: dc/TVA
     if: ${{ inputs.CALLER == '-timeline' || inputs.CALLER == 'next' || inputs.CALLER == '-scheduler' }}
-    uses: vezham/vx-fe-deployer/.github/workflows/play-demo.helper.yml@timeline
+    uses: vezham/vx-fe-deployer/.github/workflows/play-demo.helper.yml@labs
     secrets:
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       # GCP_SA_KEY: ${{ secrets.PLAYGROUND_APP_TVA_GCP_SA_KEY }}
