@@ -1,4 +1,4 @@
-name: static_cdn | helper
+name: static-cdn | helper
 
 on:
   workflow_call:
@@ -31,10 +31,10 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-cdns' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../v/bin/ci
-  ENTRY_POINT: ./apps-cdns/static_cdn
-  VX_APP_PATH: apps-cdns/static_cdn
-  VX_APP_NAME: static_cdn
-  NX_APP_NAME: static_cdn
+  ENTRY_POINT: ./apps-cdns/static-cdn
+  VX_APP_PATH: apps-cdns/static-cdn
+  VX_APP_NAME: static-cdn
+  NX_APP_NAME: static-cdn
 
 jobs:
   build_and_deploy:

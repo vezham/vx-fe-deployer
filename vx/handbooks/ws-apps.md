@@ -27,7 +27,7 @@
 
 ### v0xFE-apps-cdns
 
-- static_cdn
+- static-cdn
 
 ### v0xFE-apps-internals
 

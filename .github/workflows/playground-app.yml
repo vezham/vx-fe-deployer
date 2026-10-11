@@ -10,7 +10,7 @@ on:
 jobs:
   tva:
     name: dc/TVA
-    if: ${{ inputs.CALLER == '-timeline' || inputs.CALLER == 'next' || inputs.CALLER == '-scheduler' }}
+    if: ${{ inputs.CALLER == 'timeline' || inputs.CALLER == 'next' || inputs.CALLER == '-scheduler' }}
     uses: vezham/vx-fe-deployer/.github/workflows/playground-app.helper.yml@timeline
     secrets:
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
