@@ -34,8 +34,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-widgets' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../../v/bin/ci
-  ENTRY_POINT: ./apps_widgets/chat_widget/__mocks__/
-  # VX_APP_PATH: apps_widgets/chat_widget
+  ENTRY_POINT: ./apps-widgets/chat_widget/__mocks__/
+  # VX_APP_PATH: apps-widgets/chat_widget
   VX_APP_NAME: chat_widget-mock
   # NX_APP_NAME: chat_widget
 

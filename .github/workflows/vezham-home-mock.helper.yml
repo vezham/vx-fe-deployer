@@ -31,8 +31,8 @@ env:
   # REPO: ${{ inputs.GIT_REPO || 'vezham/vx-fe-apps-internals' }}
   REPO: ${{ inputs.GIT_REPO || 'vezham/vx-fe-kit' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
-  ENTRY_POINT: ./apps_vezham/home-mock/
-  # VX_APP_PATH: apps_vezham/home-mock
+  ENTRY_POINT: ./apps-vezham/home-mock/
+  # VX_APP_PATH: apps-vezham/home-mock
   VX_APP_NAME: home-mock
 
 jobs:

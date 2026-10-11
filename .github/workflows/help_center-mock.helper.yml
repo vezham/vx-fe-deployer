@@ -34,8 +34,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-platforms' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../../v/bin/ci
-  ENTRY_POINT: ./apps_platforms/help_center/__mocks__/
-  # VX_APP_PATH: apps_platforms/help_center
+  ENTRY_POINT: ./apps-platforms/help_center/__mocks__/
+  # VX_APP_PATH: apps-platforms/help_center
   VX_APP_NAME: help_center-mock
   # NX_APP_NAME: help_center
 

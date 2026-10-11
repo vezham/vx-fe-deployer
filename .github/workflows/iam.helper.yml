@@ -49,8 +49,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-pods' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../v/bin/ci
-  ENTRY_POINT: ./apps_pods/iam
-  VX_APP_PATH: apps_pods/iam
+  ENTRY_POINT: ./apps-pods/iam
+  VX_APP_PATH: apps-pods/iam
   VX_APP_NAME: iam
   NX_APP_NAME: iam
 

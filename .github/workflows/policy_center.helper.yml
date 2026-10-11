@@ -31,8 +31,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-platforms' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../v/bin/ci
-  ENTRY_POINT: ./apps_platforms/policy_center
-  VX_APP_PATH: apps_platforms/policy_center
+  ENTRY_POINT: ./apps-platforms/policy_center
+  VX_APP_PATH: apps-platforms/policy_center
   VX_APP_NAME: policy_center
   NX_APP_NAME: policy_center
 

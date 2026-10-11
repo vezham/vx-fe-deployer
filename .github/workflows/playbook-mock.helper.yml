@@ -31,8 +31,8 @@ env:
   # REPO: ${{ inputs.GIT_REPO || 'vezham/vx-fe-apps-internals' }}
   REPO: ${{ inputs.GIT_REPO || 'vezham/vx-fe-kit' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
-  ENTRY_POINT: ./apps_internals/playbook-mock/
-  # VX_APP_PATH: apps_internals/playbook-mock
+  ENTRY_POINT: ./apps-internals/playbook-mock/
+  # VX_APP_PATH: apps-internals/playbook-mock
   VX_APP_NAME: playbook-mock
 
 jobs:

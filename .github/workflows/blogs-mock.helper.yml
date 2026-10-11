@@ -34,8 +34,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-platforms' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../../v/bin/ci
-  ENTRY_POINT: ./apps_platforms/blogs/__mocks__/
-  # VX_APP_PATH: apps_platforms/blogs
+  ENTRY_POINT: ./apps-platforms/blogs/__mocks__/
+  # VX_APP_PATH: apps-platforms/blogs
   VX_APP_NAME: blogs-mock
   # NX_APP_NAME: blogs
 

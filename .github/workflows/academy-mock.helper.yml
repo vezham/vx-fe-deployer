@@ -34,8 +34,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-platforms' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../../v/bin/ci
-  ENTRY_POINT: ./apps_platforms/academy/__mocks__/
-  # VX_APP_PATH: apps_platforms/academy
+  ENTRY_POINT: ./apps-platforms/academy/__mocks__/
+  # VX_APP_PATH: apps-platforms/academy
   VX_APP_NAME: academy-mock
   # NX_APP_NAME: academy
 

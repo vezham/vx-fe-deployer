@@ -34,8 +34,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-platforms' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../../v/bin/ci
-  ENTRY_POINT: ./apps_platforms/whats_new/__mocks__/
-  # VX_APP_PATH: apps_platforms/whats_new
+  ENTRY_POINT: ./apps-platforms/whats_new/__mocks__/
+  # VX_APP_PATH: apps-platforms/whats_new
   VX_APP_NAME: whats_new-mock
   # NX_APP_NAME: whats_new
 
