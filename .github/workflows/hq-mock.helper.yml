@@ -34,8 +34,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-suites' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../../v/bin/ci
-  ENTRY_POINT: ./apps_suites/hq/__mocks__/
-  # VX_APP_PATH: apps_suites/hq
+  ENTRY_POINT: ./apps-suites/hq/__mocks__/
+  # VX_APP_PATH: apps-suites/hq
   VX_APP_NAME: hq-mock
   # NX_APP_NAME: hq
 

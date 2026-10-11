@@ -31,8 +31,8 @@ env:
   REPO: ${{ inputs.GIT_REPO || 'vezham/v0xFE-apps-internals' }}
   BRANCH: ${{ inputs.GIT_BRANCH || 'timeline' }}
   CI_DIR: ../../v/bin/ci
-  ENTRY_POINT: ./apps_internals/storybook
-  VX_APP_PATH: apps_internals/storybook
+  ENTRY_POINT: ./apps-internals/storybook
+  VX_APP_PATH: apps-internals/storybook
   VX_APP_NAME: storybook
   NX_APP_NAME: storybook
 
