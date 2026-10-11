@@ -13,7 +13,8 @@ jobs:
     if: ${{ inputs.CALLER == 'timeline' || inputs.CALLER == 'scheduler' }}
     uses: vezham/vx-fe-deployer/.github/workflows/static-cdn.helper.yml@timeline
     secrets:
-      GCP_SA_KEY: ${{ secrets.STATIC_CDN_TVA_GCP_SA_KEY }}
+      # GCP_SA_KEY: ${{ secrets.STATIC_CDN_TVA_GCP_SA_KEY }}
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: ${{ inputs.CALLER }}
@@ -27,7 +28,8 @@ jobs:
     if: ${{ inputs.CALLER == 'deploy/dev' || inputs.CALLER == '-scheduler' }}
     uses: vezham/vx-fe-deployer/.github/workflows/static-cdn.helper.yml@timeline
     secrets:
-      GCP_SA_KEY: ${{ secrets.STATIC_CDN_DEV_GCP_SA_KEY }}
+      # GCP_SA_KEY: ${{ secrets.STATIC_CDN_DEV_GCP_SA_KEY }}
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: deploy/dev
@@ -41,7 +43,8 @@ jobs:
     if: ${{ inputs.CALLER == 'deploy/qa' || inputs.CALLER == '-scheduler' }}
     uses: vezham/vx-fe-deployer/.github/workflows/static-cdn.helper.yml@timeline
     secrets:
-      GCP_SA_KEY: ${{ secrets.STATIC_CDN_QA_GCP_SA_KEY }}
+      # GCP_SA_KEY: ${{ secrets.STATIC_CDN_QA_GCP_SA_KEY }}
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: deploy/qa
@@ -54,7 +57,8 @@ jobs:
     if: ${{ inputs.CALLER == 'deploy/preview' || inputs.CALLER == '-scheduler' }}
     uses: vezham/vx-fe-deployer/.github/workflows/static-cdn.helper.yml@timeline
     secrets:
-      GCP_SA_KEY: ${{ secrets.STATIC_CDN_PREVIEW_GCP_SA_KEY }}
+      # GCP_SA_KEY: ${{ secrets.STATIC_CDN_PREVIEW_GCP_SA_KEY }}
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: deploy/preview
@@ -67,7 +71,8 @@ jobs:
     if: ${{ inputs.CALLER == 'deploy/live' || inputs.CALLER == '-scheduler' }}
     uses: vezham/vx-fe-deployer/.github/workflows/static-cdn.helper.yml@timeline
     secrets:
-      GCP_SA_KEY: ${{ secrets.STATIC_CDN_LIVE_GCP_SA_KEY }}
+      # GCP_SA_KEY: ${{ secrets.STATIC_CDN_LIVE_GCP_SA_KEY }}
+      GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
     with:
       GIT_BRANCH: deploy/live
