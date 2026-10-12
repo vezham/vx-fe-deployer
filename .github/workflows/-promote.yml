@@ -1,0 +1,38 @@
+name: 🚀 Promote
+run-name: Promote ${{ inputs.APP }} | ${{ inputs.APP_ENV }} | ${{ inputs.GIT_SHA }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      APP:
+        description: Application to build and deploy
+        required: true
+        type: choice
+        options:
+          - static-cdn
+      GIT_SHA:
+        description: Full 40-character commit SHA in the selected app's source repository
+        required: true
+        type: string
+      APP_ENV:
+        description: Destination environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - preview
+          - production
+
+permissions:
+  contents: write
+
+jobs:
+  static-cdn:
+    name: static-cdn | promote
+    if: ${{ inputs.APP == 'static-cdn' }}
+    uses: ./.github/workflows/static-cdn-promote.yml
+    secrets: inherit
+    with:
+      GIT_SHA: ${{ inputs.GIT_SHA }}
+      APP_ENV: ${{ inputs.APP_ENV }}

@@ -3,6 +3,8 @@ name: static-cdn | helper
 on:
   workflow_call:
     secrets:
+      SOURCE_REPO_TOKEN:
+        required: false
       GCP_SA_KEY:
         required: true
       HEROUI_AUTH_TOKEN:
@@ -59,6 +61,7 @@ jobs:
         with:
           GIT_REPO: ${{ env.REPO }}
           GIT_BRANCH: ${{ env.BRANCH }}
+          GIT_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
 
       - name: action | gen $DX_APP_URL
         uses: vezham/vx-deployer/.github/actions/common/gen-dx-app-url@timeline
