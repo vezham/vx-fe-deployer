@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  statuses: write
 
 concurrency:
   group: static-cdn-promote-${{ github.repository }}-${{ inputs.APP_ENV }}
@@ -24,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.commit.outputs.sha }}
+      short_sha: ${{ steps.commit.outputs.short_sha }}
     steps:
       - name: action | validate promotion
         id: commit
@@ -33,6 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
           GIT_SHA: ${{ inputs.GIT_SHA }}
           APP_ENV: ${{ inputs.APP_ENV }}
+          APP_NAME: static-cdn
 
   dev:
     name: dev | dc
@@ -46,6 +49,7 @@ jobs:
       SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
     with:
       GIT_BRANCH: ${{ needs.validate.outputs.sha }}
+      IS_PROMOTION: true
       APP_ENV: dev
       RELEASE_CHANNEL: beta
       IS_DEBUG: true
@@ -63,6 +67,7 @@ jobs:
       SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
     with:
       GIT_BRANCH: ${{ needs.validate.outputs.sha }}
+      IS_PROMOTION: true
       APP_ENV: qa
       RELEASE_CHANNEL: beta
       IS_DEBUG: false
@@ -80,6 +85,7 @@ jobs:
       SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
     with:
       GIT_BRANCH: ${{ needs.validate.outputs.sha }}
+      IS_PROMOTION: true
       APP_ENV: preview
       RELEASE_CHANNEL: stable
       IS_DEBUG: false
@@ -97,6 +103,7 @@ jobs:
       SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
     with:
       GIT_BRANCH: ${{ needs.validate.outputs.sha }}
+      IS_PROMOTION: true
       APP_ENV: production
       RELEASE_CHANNEL: stable
       IS_DEBUG: false

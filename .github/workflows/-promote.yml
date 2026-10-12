@@ -26,6 +26,7 @@ on:
 
 permissions:
   contents: write
+  statuses: write
 
 jobs:
   static-cdn:
