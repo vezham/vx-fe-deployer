@@ -27,12 +27,20 @@ jobs:
       sha: ${{ steps.commit.outputs.sha }}
       short_sha: ${{ steps.commit.outputs.short_sha }}
     steps:
+      - name: action | authenticate source repository
+        id: source-auth
+        uses: vezham/vx-deployer/.github/actions/common/setup-source-auth@timeline
+        with:
+          GIT_REPO: vezham/vx-fe-apps-cdns
+          APP_CLIENT_ID: ${{ vars.SOURCE_APP_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+
       - name: action | validate promotion
         id: commit
         uses: vezham/vx-deployer/.github/actions/deployment/validate-promotion@timeline
         with:
           GIT_REPO: vezham/vx-fe-apps-cdns
-          GITHUB_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ steps.source-auth.outputs.token }}
           GIT_SHA: ${{ inputs.GIT_SHA }}
           APP_ENV: ${{ inputs.APP_ENV }}
           APP_NAME: static-cdn
@@ -46,7 +54,7 @@ jobs:
       # GCP_SA_KEY: ${{ secrets.STATIC_CDN_DEV_GCP_SA_KEY }}
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
-      SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
+      SOURCE_APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
     with:
       GIT_BRANCH: ${{ needs.validate.outputs.sha }}
       IS_PROMOTION: true
@@ -64,7 +72,7 @@ jobs:
       # GCP_SA_KEY: ${{ secrets.STATIC_CDN_QA_GCP_SA_KEY }}
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
-      SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
+      SOURCE_APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
     with:
       GIT_BRANCH: ${{ needs.validate.outputs.sha }}
       IS_PROMOTION: true
@@ -82,7 +90,7 @@ jobs:
       # GCP_SA_KEY: ${{ secrets.STATIC_CDN_PREVIEW_GCP_SA_KEY }}
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
-      SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
+      SOURCE_APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
     with:
       GIT_BRANCH: ${{ needs.validate.outputs.sha }}
       IS_PROMOTION: true
@@ -100,7 +108,7 @@ jobs:
       # GCP_SA_KEY: ${{ secrets.STATIC_CDN_LIVE_GCP_SA_KEY }}
       GCP_SA_KEY: ${{ secrets.PLAYGROUND_DOCS_TVA_GCP_SA_KEY }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
-      SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
+      SOURCE_APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
     with:
       GIT_BRANCH: ${{ needs.validate.outputs.sha }}
       IS_PROMOTION: true

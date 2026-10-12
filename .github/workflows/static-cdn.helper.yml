@@ -3,7 +3,7 @@ name: static-cdn | helper
 on:
   workflow_call:
     secrets:
-      SOURCE_REPO_TOKEN:
+      SOURCE_APP_PRIVATE_KEY:
         required: false
       GCP_SA_KEY:
         required: true
@@ -60,12 +60,20 @@ jobs:
           APP_ENV: ${{ inputs.APP_ENV }}
           RELEASE_CHANNEL: ${{ inputs.RELEASE_CHANNEL }}
 
+      - name: action | authenticate source repository
+        id: source-auth
+        uses: vezham/vx-deployer/.github/actions/common/setup-source-auth@timeline
+        with:
+          GIT_REPO: ${{ env.REPO }}
+          APP_CLIENT_ID: ${{ vars.SOURCE_APP_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+
       - name: action | checkout | ${{ env.REPO }}@${{ env.BRANCH }}
         uses: vezham/vx-deployer/.github/actions/common/setup-checkout@timeline
         with:
           GIT_REPO: ${{ env.REPO }}
           GIT_BRANCH: ${{ env.BRANCH }}
-          GIT_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+          GIT_TOKEN: ${{ steps.source-auth.outputs.token }}
 
       - name: Resolve deployed source SHA
         id: source
@@ -82,7 +90,7 @@ jobs:
           APP_NAME: ${{ env.VX_APP_NAME }}
           APP_ENV: ${{ inputs.IS_PROMOTION && inputs.APP_ENV || 'tva' }}
           STATUS: in_progress
-          GITHUB_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ steps.source-auth.outputs.token }}
 
       - name: action | gen $DX_APP_URL
         uses: vezham/vx-deployer/.github/actions/common/gen-dx-app-url@timeline
@@ -105,12 +113,14 @@ jobs:
         uses: vezham/vx-deployer/.github/actions/nx/gen-build@timeline
 
       - name: action | ci-setup | firebase
+        id: deployment
         uses: vezham/vx-deployer/.github/actions/cloud-providers/firebase@timeline
         with:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          COMMENT_DEPLOYMENT: 'false'
 
       - name: action | track deployment result
-        if: ${{ always() && (steps.source.outputs.sha != '' || inputs.IS_PROMOTION) }}
+        if: ${{ always() && steps.source-auth.outputs.token != '' && (steps.source.outputs.sha != '' || inputs.IS_PROMOTION) }}
         continue-on-error: true
         uses: vezham/vx-deployer/.github/actions/deployment/comment-promotion@timeline
         with:
@@ -119,4 +129,7 @@ jobs:
           APP_NAME: ${{ env.VX_APP_NAME }}
           APP_ENV: ${{ inputs.IS_PROMOTION && inputs.APP_ENV || 'tva' }}
           STATUS: ${{ job.status }}
-          GITHUB_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+          PREVIEW_URL: ${{ steps.deployment.outputs.preview_url }}
+          PREVIEW_EXPIRES_AT: ${{ steps.deployment.outputs.preview_expires_at }}
+          LIVE_URL: ${{ steps.deployment.outputs.live_url }}
+          GITHUB_TOKEN: ${{ steps.source-auth.outputs.token }}
