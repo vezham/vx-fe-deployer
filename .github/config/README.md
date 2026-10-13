@@ -56,7 +56,7 @@ apps-internals:
 Each app needs one source-repository trigger and one registry entry. The trigger
 calls `vezham/vx-fe-deployer/.github/workflows/web-app.yml@timeline` directly,
 passing its app ID and `CALLER`. The shared workflow loads app settings,
-serializes each app/environment deployment, and calls the shared source
+serializes each app/environment/Production-target deployment, and calls the shared source
 preparation action and build/deploy workflow in `vx-deployer`. App-specific
 deployer wrappers, helper and promotion workflows are unnecessary.
 
@@ -97,16 +97,98 @@ validation even if selected in the shared environment dropdown.
 
 Manual promotions and scheduled Production rebuilds use the same path. The run
 summary records the selected path and prerequisite deployment. Skipped stages
-are never marked successful in source tracking or the journal. Keep credential
-mappings for all five environments in the registry; stage selection controls
-which environments can be deployed. Update the shared `vx-deployer` actions
+are never marked successful in source tracking or the journal. Keep non-Production credential mappings in the registry; Production needs either
+its single credential mapping or credentials for each named target. Stage selection
+controls which environments can be deployed. Update the shared `vx-deployer` actions
 before publishing workflow wiring or app overrides in `vx-fe-deployer`.
+
+## App, environment and Production-target configuration
+
+Use `values` for public build values and `secret_values` for variable-to-secret-name
+mappings.
+Each is optional at `defaults`, app, environment profile and Production-target levels.
+The merge order is defaults → app → default environment → app environment → target.
+Values merge by variable name; a later public value replaces an earlier secret reference
+and a later secret reference replaces an earlier public value. A variable cannot be
+both kinds in the same layer. Core `V_APP_*`, `V_RELEASE_CHANNEL`, `V_IS_DEBUG` and
+`V_PRODUCTION_TARGET` settings are managed by the workflow and cannot be overridden.
+
+Without `production_targets`, an app has one `default` Production deployment using
+`credential_secrets.production`. Named targets are specific to that app; any lowercase
+ID made of letters, digits and hyphens is allowed. There is no common region list.
+Each target requires its own `credential_secret` name and can override public values,
+secret references, build environment, release channel and debug mode.
+A shared credential can be referenced by multiple targets when that is intentional.
+
+Example fragment for a regional app (existing registry entries are not changed):
+
+```yaml
+apps-platforms:
+  academy:
+    repository: vezham/vx-fe-apps-platforms
+    path: apps-platforms/academy
+    credential_secrets:
+      tva: ACADEMY_TVA_GCP_SA_KEY
+      dev: ACADEMY_DEV_GCP_SA_KEY
+      qa: ACADEMY_QA_GCP_SA_KEY
+      preview: ACADEMY_PREVIEW_GCP_SA_KEY
+    values:
+      V_FEATURE_ENABLED: true
+    environments:
+      dev:
+        values:
+          V_API_URL: https://dev.example.com
+        secret_values:
+          V_API_KEY: ACADEMY_DEV_API_KEY
+    production_targets:
+      us:
+        credential_secret: ACADEMY_US_LIVE_GCP_SA_KEY
+        values:
+          V_API_URL: https://us.example.com
+        secret_values:
+          V_API_KEY: ACADEMY_US_API_KEY
+      eu:
+        credential_secret: ACADEMY_EU_LIVE_GCP_SA_KEY
+        values:
+          V_API_URL: https://eu.example.com
+        secret_values:
+          V_API_KEY: ACADEMY_EU_API_KEY
+```
+
+Other apps can use different targets or omit the map entirely. `PRODUCTION_TARGET`
+is a text input on the common dispatcher; enter a target listed for the selected app.
+Leave it empty for single Production, or when the app explicitly defines a `default`
+target. Named-only maps require an explicit selection. Unknown targets and targets
+passed to Dev, QA, Preview or TVA are rejected before deployment.
+
+Every target follows the same app `promotion_path`; Production/US and Production/EU
+both require the preceding configured stage for the same app and SHA. Source commit
+tracking adds a separate row, status context and URL set for each target. The central
+issue remains one journal per app, with target-specific entries and latest successful
+SHA selection. Existing unqualified Production entries belong only to `default`.
+The CDN scheduler expands each app's actual target list into a deployment matrix;
+other category schedulers retain their previous implementations until migration.
+
+The resolver emits only public values and secret **names**. The caller forwards its
+available Actions secrets through a reusable-workflow secret input. The build action
+selects and masks referenced secrets, fails on missing values, writes `.env` after
+checkout, and exports the variables for build steps. The generated file uses owner-only
+permissions. Secrets are never written to registry outputs, status comments or the
+journal. Values included in browser bundles are visible to browser users, even when
+CI obtains them from Actions secrets; this does not create a server runtime.
+
+The existing app `.env` is preserved and resolved settings are appended; exported
+process variables take precedence during the build. Every environment and Production
+target uses `vx/deploy/firebase/<app path>.json`. It is copied to root `firebase.json`
+after deploy-config generation. The selected credential identifies the Firebase project.
+Each Production target rebuilds the selected SHA with its configuration.
 
 ## Add an app
 
 1. Add an app under its top-level group (`apps`, `apps-cdns`, `apps-internals`,
    `apps-platforms`, `apps-pods`, `apps-suites` or `apps-widgets`), with
-   `repository`, `path` and all five `credential_secrets` mappings. App IDs use
+   `repository`, `path` and `credential_secrets` mappings (or per-target
+   Production credentials). App IDs use
    lowercase letters, digits and hyphens and must be unique across all groups. The app must have Nx build/deploy-generation targets and a Firebase
    config at `vx/deploy/firebase/<app path>.json`, as existing web apps do.
 2. Add a source-repository trigger that calls the shared web app workflow
@@ -143,7 +225,8 @@ requests and pushes to `timeline`. A stale dropdown fails the check. Shared
 generation logic lives in `vx-deployer`; adding an app requires no routing job.
 
 The CDN scheduler discovers enabled `cdns` entries automatically and rebuilds
-each app's latest successful Production SHA. Set `enabled: false` to exclude
+each app/target's latest successful Production SHA independently. Targets without
+a successful journal entry are skipped, with no fallback to another target or timeline. Set `enabled: false` to exclude
 an app from manual and scheduled deployment. Other category schedulers retain
 their existing implementations until migrated.
 
@@ -186,9 +269,9 @@ native desktop and Vercel mock apps are excluded.
 | `one.yml` / `one`                         | `one`             | `apps-suites/one`                |
 | `chat_widget.yml` / `chat_widget`         | `chat-widget`     | `apps-widgets/chat-widget`       |
 
-The shared flow uses the Static CDN build inputs (`V_APP_NAME`, `V_APP_ENV`,
-`V_RELEASE_CHANNEL`, `V_IS_DEBUG`). Source migration must handle the following
-legacy differences before those apps are deployed through the shared flow:
+The shared flow sets `V_APP_NAME`, `V_APP_ENV`, `V_RELEASE_CHANNEL`, `V_IS_DEBUG`
+and, for Production, `V_PRODUCTION_TARGET`. Configure these legacy differences
+using the per-app fields described below before switching source callers:
 
 - Accounts, Business, IAM and HQ previously passed API, IAM, account, business,
   HQ and sandbox URLs and flags. Chat Widget passed API and widget URLs.
@@ -197,8 +280,8 @@ legacy differences before those apps are deployed through the shared flow:
   plus a Figma access-token secret. Its new registry entry expects a separate
   `storybook-sb` app with the standard Nx targets and deploy config.
 - Chat Widget had US/EU/IN/AU production jobs using one credential secret.
-  The baseline registry records one production environment; regional deployment
-  needs a separate migration before replacing those jobs.
+  The baseline registry still records one Production deployment. Add explicit
+  `production_targets` before replacing those regional jobs.
 
 Each migrated source app must provide a Node runtime declaration in its app or
 workspace `package.json`, a pnpm package-manager declaration, standard Nx build

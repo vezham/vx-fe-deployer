@@ -26,6 +26,8 @@ defaults:
 # vx-bot/NOTE: Migration entries use planned source repositories and paths.
 # Update each source app before switching its caller to the shared web workflow.
 # Store secret names here; keep credential values in Actions secrets.
+# Optional values and secret_values inherit defaults → app → environment → target.
+# Optional production_targets belong to each app; omit for one default Production deployment.
 # vx-bot/INFO: Optional per-app promotion_path skips stages, e.g. [tva, preview, production].
 # Omit promotion_path to keep the full TVA → Dev → QA → Preview → Production order.
 
@@ -241,4 +243,29 @@ apps-widgets:
       dev: CHAT_WIDGET_DEV_GCP_SA_KEY
       qa: CHAT_WIDGET_QA_GCP_SA_KEY
       preview: CHAT_WIDGET_PREVIEW_GCP_SA_KEY
-      production: CHAT_WIDGET_LIVE_GCP_SA_KEY
+    production_targets:
+      us:
+        credential_secret: CHAT_WIDGET_US_LIVE_GCP_SA_KEY
+        values:
+          V_APP_API_URL: https://us.api.vezham.com
+          V_WIDGET_URL: https://us.widgets.vezham.com
+      eu:
+        credential_secret: CHAT_WIDGET_EU_LIVE_GCP_SA_KEY
+        values:
+          V_APP_API_URL: https://eu.api.vezham.com
+          V_WIDGET_URL: https://eu.widgets.vezham.com
+      in:
+        credential_secret: CHAT_WIDGET_IN_LIVE_GCP_SA_KEY
+        values:
+          V_APP_API_URL: https://in.api.vezham.com
+          V_WIDGET_URL: https://in.widgets.vezham.com
+      au:
+        credential_secret: CHAT_WIDGET_AU_LIVE_GCP_SA_KEY
+        values:
+          V_APP_API_URL: https://au.api.vezham.com
+          V_WIDGET_URL: https://au.widgets.vezham.com
+      sg:
+        credential_secret: CHAT_WIDGET_SG_LIVE_GCP_SA_KEY
+        values:
+          V_APP_API_URL: https://sg.api.vezham.com
+          V_WIDGET_URL: https://sg.widgets.vezham.com

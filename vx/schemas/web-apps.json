@@ -35,6 +35,12 @@
           },
           "required": ["tva", "dev", "qa", "preview", "production"],
           "additionalProperties": false
+        },
+        "values": {
+          "$ref": "#/definitions/buildValues"
+        },
+        "secret_values": {
+          "$ref": "#/definitions/secretValues"
         }
       },
       "required": ["environments"],
@@ -89,6 +95,12 @@
         "debug": {
           "type": "boolean",
           "description": "Whether the build enables debug mode."
+        },
+        "values": {
+          "$ref": "#/definitions/buildValues"
+        },
+        "secret_values": {
+          "$ref": "#/definitions/secretValues"
         }
       },
       "additionalProperties": false
@@ -144,7 +156,7 @@
               "$ref": "#/definitions/credentialSecret"
             }
           },
-          "required": ["tva", "dev", "qa", "preview", "production"],
+          "required": ["tva", "dev", "qa", "preview"],
           "additionalProperties": false
         },
         "environments": {
@@ -176,10 +188,43 @@
         },
         "promotion_path": {
           "$ref": "#/definitions/promotionPath"
+        },
+        "values": {
+          "$ref": "#/definitions/buildValues"
+        },
+        "secret_values": {
+          "$ref": "#/definitions/secretValues"
+        },
+        "production_targets": {
+          "type": "object",
+          "minProperties": 1,
+          "patternProperties": {
+            "^[a-z0-9][a-z0-9-]*$": {
+              "$ref": "#/definitions/productionTarget"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Optional app-specific Production destinations. Each has its own credentials and overrides. Omit for a single Production deployment."
         }
       },
       "required": ["repository", "path", "credential_secrets"],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "not": {
+              "required": ["production_targets"]
+            }
+          },
+          "then": {
+            "properties": {
+              "credential_secrets": {
+                "required": ["production"]
+              }
+            }
+          }
+        }
+      ]
     },
     "appGroup": {
       "type": "object",
@@ -212,6 +257,75 @@
         ["tva", "dev", "qa", "preview", "production"]
       ],
       "default": ["tva", "dev", "qa", "preview", "production"]
+    },
+    "buildValues": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Z_][A-Z0-9_]*$",
+        "not": {
+          "enum": [
+            "V_APP_NAME",
+            "V_APP_ENV",
+            "V_RELEASE_CHANNEL",
+            "V_IS_DEBUG",
+            "V_PRODUCTION_TARGET"
+          ]
+        }
+      },
+      "additionalProperties": {
+        "type": ["string", "number", "boolean"]
+      },
+      "description": "Public build variables. Do not store secret values here."
+    },
+    "secretValues": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Z_][A-Z0-9_]*$",
+        "not": {
+          "enum": [
+            "V_APP_NAME",
+            "V_APP_ENV",
+            "V_RELEASE_CHANNEL",
+            "V_IS_DEBUG",
+            "V_PRODUCTION_TARGET"
+          ]
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/credentialSecret"
+      },
+      "description": "Build variable names mapped to GitHub Actions secret names."
+    },
+    "productionTarget": {
+      "description": "Build settings. App overrides may specify only the fields they change.",
+      "type": "object",
+      "properties": {
+        "build_environment": {
+          "type": "string",
+          "enum": ["dev", "qa", "preview", "production"],
+          "description": "Destination-specific .env profile used during the build; TVA uses dev by default."
+        },
+        "release_channel": {
+          "type": "string",
+          "enum": ["canary", "beta", "stable"],
+          "description": "Release channel used during the build."
+        },
+        "debug": {
+          "type": "boolean",
+          "description": "Whether the build enables debug mode."
+        },
+        "values": {
+          "$ref": "#/definitions/buildValues"
+        },
+        "secret_values": {
+          "$ref": "#/definitions/secretValues"
+        },
+        "credential_secret": {
+          "$ref": "#/definitions/credentialSecret"
+        }
+      },
+      "additionalProperties": false,
+      "required": ["credential_secret"]
     }
   },
   "minProperties": 3

@@ -1,5 +1,5 @@
 name: 🚀 Promote
-run-name: Promote ${{ inputs.APP }} | ${{ inputs.APP_ENV }} | ${{ inputs.GIT_SHA }}
+run-name: Promote ${{ inputs.APP }} | ${{ inputs.APP_ENV }}${{ inputs.PRODUCTION_TARGET != '' && format(' | {0}', inputs.PRODUCTION_TARGET) || '' }} | ${{ inputs.GIT_SHA }}
 
 on:
   workflow_dispatch:
@@ -46,6 +46,10 @@ on:
           - qa
           - preview
           - production
+      PRODUCTION_TARGET:
+        description: Production target from this app’s production_targets; leave empty for single Production
+        type: string
+        required: false
 
 permissions:
   contents: write
@@ -61,3 +65,4 @@ jobs:
       GIT_SHA: ${{ inputs.GIT_SHA }}
       APP: ${{ inputs.APP }}
       APP_ENV: ${{ inputs.APP_ENV }}
+      PRODUCTION_TARGET: ${{ inputs.PRODUCTION_TARGET }}

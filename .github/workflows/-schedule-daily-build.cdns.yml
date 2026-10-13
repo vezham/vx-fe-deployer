@@ -12,8 +12,7 @@ run-name: >
   🚀 BnD • ${{
       github.event_name == 'schedule' && '🕒 Scheduled •' ||
       github.event_name == 'workflow_dispatch' && '⚡ Trails •'
-  }} cdns | daily-build
-  - by @${{ github.actor || 'vx/ci' }}
+  }} cdns | daily-build - by @${{ github.actor || 'vx/ci' }}
 
 permissions:
   contents: write
@@ -25,7 +24,7 @@ jobs:
     name: Resolve CDN apps
     runs-on: ubuntu-latest
     outputs:
-      apps: ${{ steps.apps.outputs.apps }}
+      deployments: ${{ steps.apps.outputs.deployments }}
     steps:
       - name: action | list CDN apps
         id: apps
@@ -36,16 +35,17 @@ jobs:
           CATEGORY: cdns
 
   production:
-    name: 🕒 ${{ matrix.app }} | production
+    name: 🕒 ${{ matrix.app }} | production${{ matrix.target != 'default' && format(' | {0}', matrix.target) || '' }}
     needs: apps
-    if: ${{ needs.apps.outputs.apps != '[]' }}
+    if: ${{ needs.apps.outputs.deployments != '[]' }}
     strategy:
       fail-fast: false
       matrix:
-        app: ${{ fromJSON(needs.apps.outputs.apps) }}
+        include: ${{ fromJSON(needs.apps.outputs.deployments) }}
     uses: vezham/vx-fe-deployer/.github/workflows/web-app.yml@timeline
     secrets: inherit
     with:
       APP: ${{ matrix.app }}
       APP_ENV: production
       USE_LATEST_PRODUCTION: true
+      PRODUCTION_TARGET: ${{ matrix.target }}

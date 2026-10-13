@@ -20,10 +20,13 @@ on:
         description: Rebuild the latest successful Production SHA from the journal
         type: boolean
         default: false
+      PRODUCTION_TARGET:
+        description: App-specific Production target; omit for a single Production deployment
+        type: string
 
 # Selection and deployment share a lock so schedules cannot rebuild a stale SHA.
 concurrency:
-  group: web-app-${{ inputs.APP }}-${{ github.repository }}-${{ inputs.CALLER != '' && 'tva' || inputs.APP_ENV }}
+  group: web-app-${{ inputs.APP }}-${{ github.repository }}-${{ inputs.CALLER != '' && 'tva' || inputs.APP_ENV }}-${{ inputs.PRODUCTION_TARGET || 'default' }}
   cancel-in-progress: false
 
 jobs:
@@ -40,6 +43,9 @@ jobs:
       debug: ${{ steps.app.outputs.debug }}
       credential_secret: ${{ steps.app.outputs.credential_secret }}
       git_ref: ${{ steps.source.outputs.git_ref }}
+      production_target: ${{ steps.app.outputs.production_target }}
+      values: ${{ steps.app.outputs.values }}
+      secret_values: ${{ steps.app.outputs.secret_values }}
     steps:
       - name: action | resolve app settings
         id: app
@@ -50,6 +56,7 @@ jobs:
           APP: ${{ inputs.APP }}
           CALLER: ${{ inputs.CALLER }}
           APP_ENV: ${{ inputs.APP_ENV }}
+          PRODUCTION_TARGET: ${{ inputs.PRODUCTION_TARGET }}
 
       - name: action | resolve and validate deployment source
         id: source
@@ -65,9 +72,10 @@ jobs:
           JOURNAL_REPO: vezham/vx-fe-deployer
           APP_CLIENT_ID: ${{ vars.SOURCE_APP_CLIENT_ID }}
           APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+          PRODUCTION_TARGET: ${{ steps.app.outputs.production_target }}
 
   deploy:
-    name: ${{ needs.resolve.outputs.track_environment }} | dc
+    name: ${{ needs.resolve.outputs.track_environment }}${{ needs.resolve.outputs.production_target != '' && needs.resolve.outputs.production_target != 'default' && format(' | {0}', needs.resolve.outputs.production_target) || '' }} | dc
     needs: resolve
     if: ${{ needs.resolve.outputs.git_ref != '' }}
     uses: vezham/vx-deployer/.github/workflows/web-app.yml@timeline
@@ -75,6 +83,7 @@ jobs:
       GCP_SA_KEY: ${{ secrets[needs.resolve.outputs.credential_secret] }}
       HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
       SOURCE_APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+      BUILD_SECRETS: ${{ toJSON(secrets) }}
     with:
       APP_NAME: ${{ needs.resolve.outputs.app }}
       GIT_REPO: ${{ needs.resolve.outputs.repository }}
@@ -85,3 +94,6 @@ jobs:
       RELEASE_CHANNEL: ${{ needs.resolve.outputs.release_channel }}
       IS_DEBUG: ${{ fromJSON(needs.resolve.outputs.debug) }}
       JOURNAL_REPO: vezham/vx-fe-deployer
+      PRODUCTION_TARGET: ${{ needs.resolve.outputs.production_target }}
+      BUILD_VALUES: ${{ needs.resolve.outputs.values }}
+      BUILD_SECRET_VALUES: ${{ needs.resolve.outputs.secret_values }}
