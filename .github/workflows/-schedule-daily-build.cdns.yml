@@ -21,10 +21,31 @@ permissions:
   issues: write
 
 jobs:
-  static-cdn:
-    name: 🕒 static-cdn | production
-    uses: vezham/vx-fe-deployer/.github/workflows/static-cdn-promote.yml@timeline
+  apps:
+    name: Resolve CDN apps
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.apps.outputs.apps }}
+    steps:
+      - name: action | list CDN apps
+        id: apps
+        uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
+        with:
+          CONFIG_REPO: vezham/vx-fe-deployer
+          CONFIG_REF: ${{ github.sha }}
+          CATEGORY: cdns
+
+  production:
+    name: 🕒 ${{ matrix.app }} | production
+    needs: apps
+    if: ${{ needs.apps.outputs.apps != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.apps.outputs.apps) }}
+    uses: vezham/vx-fe-deployer/.github/workflows/web-app.yml@timeline
     secrets: inherit
     with:
+      APP: ${{ matrix.app }}
       APP_ENV: production
       USE_LATEST_PRODUCTION: true

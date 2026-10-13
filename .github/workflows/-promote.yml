@@ -4,16 +4,18 @@ run-name: Promote ${{ inputs.APP }} | ${{ inputs.APP_ENV }} | ${{ inputs.GIT_SHA
 on:
   workflow_dispatch:
     inputs:
-      APP:
-        description: Application to build and deploy
-        required: true
-        type: choice
-        options:
-          - static-cdn
       GIT_SHA:
         description: Full 40-character commit SHA in the selected app's source repository
         required: true
         type: string
+      APP:
+        description: Application ID from .github/config/web-apps.yaml
+        required: true
+        # vx-bot/INFO: Generated app choices from web-apps.yaml; do not edit.
+        type: choice
+        options:
+          - static-cdn
+        # vx-bot/INFO: End generated app choices.
       APP_ENV:
         description: Destination environment
         required: true
@@ -30,11 +32,11 @@ permissions:
   issues: write
 
 jobs:
-  static-cdn:
-    name: static-cdn | promote
-    if: ${{ inputs.APP == 'static-cdn' }}
-    uses: ./.github/workflows/static-cdn-promote.yml
+  promote:
+    name: ${{ inputs.APP }} | promote
+    uses: ./.github/workflows/web-app.yml
     secrets: inherit
     with:
       GIT_SHA: ${{ inputs.GIT_SHA }}
+      APP: ${{ inputs.APP }}
       APP_ENV: ${{ inputs.APP_ENV }}

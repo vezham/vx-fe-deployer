@@ -1,0 +1,86 @@
+name: web-app | deployer
+
+on:
+  workflow_call:
+    inputs:
+      APP:
+        description: Application ID in .github/config/web-apps.yaml
+        required: true
+        type: string
+      CALLER:
+        description: Source branch for automatic TVA builds; omit for promotions
+        type: string
+      GIT_SHA:
+        description: Full source commit SHA for manual promotion
+        type: string
+      APP_ENV:
+        description: Promotion destination (dev, qa, preview or production)
+        type: string
+      USE_LATEST_PRODUCTION:
+        description: Rebuild the latest successful Production SHA from the journal
+        type: boolean
+        default: false
+
+# Selection and deployment share a lock so schedules cannot rebuild a stale SHA.
+concurrency:
+  group: web-app-${{ inputs.APP }}-${{ github.repository }}-${{ inputs.CALLER != '' && 'tva' || inputs.APP_ENV }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    if: ${{ inputs.CALLER == '' || inputs.CALLER == 'timeline' || inputs.CALLER == '-scheduler' }}
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.app.outputs.app }}
+      repository: ${{ steps.app.outputs.repository }}
+      path: ${{ steps.app.outputs.path }}
+      track_environment: ${{ steps.app.outputs.track_environment }}
+      build_environment: ${{ steps.app.outputs.build_environment }}
+      release_channel: ${{ steps.app.outputs.release_channel }}
+      debug: ${{ steps.app.outputs.debug }}
+      credential_secret: ${{ steps.app.outputs.credential_secret }}
+      git_ref: ${{ steps.source.outputs.git_ref }}
+    steps:
+      - name: action | resolve app settings
+        id: app
+        uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
+        with:
+          CONFIG_REPO: vezham/vx-fe-deployer
+          CONFIG_REF: ${{ github.repository == 'vezham/vx-fe-deployer' && github.sha || 'timeline' }}
+          APP: ${{ inputs.APP }}
+          CALLER: ${{ inputs.CALLER }}
+          APP_ENV: ${{ inputs.APP_ENV }}
+
+      - name: action | resolve and validate deployment source
+        id: source
+        uses: vezham/vx-deployer/.github/actions/deployment/prepare-web-deployment@timeline
+        with:
+          APP_NAME: ${{ steps.app.outputs.app }}
+          GIT_REPO: ${{ steps.app.outputs.repository }}
+          TRACK_ENV: ${{ steps.app.outputs.track_environment }}
+          GIT_REF: ${{ steps.app.outputs.git_ref }}
+          GIT_SHA: ${{ inputs.GIT_SHA }}
+          USE_LATEST_PRODUCTION: ${{ inputs.USE_LATEST_PRODUCTION }}
+          JOURNAL_REPO: vezham/vx-fe-deployer
+          APP_CLIENT_ID: ${{ vars.SOURCE_APP_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+
+  deploy:
+    name: ${{ needs.resolve.outputs.track_environment }} | dc
+    needs: resolve
+    if: ${{ needs.resolve.outputs.git_ref != '' }}
+    uses: vezham/vx-deployer/.github/workflows/web-app.yml@timeline
+    secrets:
+      GCP_SA_KEY: ${{ secrets[needs.resolve.outputs.credential_secret] }}
+      HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
+      SOURCE_APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
+    with:
+      APP_NAME: ${{ needs.resolve.outputs.app }}
+      GIT_REPO: ${{ needs.resolve.outputs.repository }}
+      APP_PATH: ${{ needs.resolve.outputs.path }}
+      GIT_REF: ${{ needs.resolve.outputs.git_ref }}
+      TRACK_ENV: ${{ needs.resolve.outputs.track_environment }}
+      APP_ENV: ${{ needs.resolve.outputs.build_environment }}
+      RELEASE_CHANNEL: ${{ needs.resolve.outputs.release_channel }}
+      IS_DEBUG: ${{ fromJSON(needs.resolve.outputs.debug) }}
+      JOURNAL_REPO: vezham/vx-fe-deployer

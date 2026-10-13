@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vezham.com/schemas/web-apps.json",
+  "title": "Vx web app deployment registry",
+  "description": "Shared build defaults and per-app configuration for Firebase/Nx web deployments. Store credential secret names, never secret values.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "integer",
+      "const": 1,
+      "description": "Registry format version."
+    },
+    "defaults": {
+      "description": "Complete build profiles inherited by every app.",
+      "type": "object",
+      "properties": {
+        "environments": {
+          "type": "object",
+          "properties": {
+            "tva": {
+              "$ref": "#/definitions/completeProfile"
+            },
+            "dev": {
+              "$ref": "#/definitions/completeProfile"
+            },
+            "qa": {
+              "$ref": "#/definitions/completeProfile"
+            },
+            "preview": {
+              "$ref": "#/definitions/completeProfile"
+            },
+            "production": {
+              "$ref": "#/definitions/completeProfile"
+            }
+          },
+          "required": ["tva", "dev", "qa", "preview", "production"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["environments"],
+      "additionalProperties": false
+    },
+    "apps": {
+      "type": "object",
+      "description": "One entry per app, keyed by its lowercase registry ID.",
+      "patternProperties": {
+        "^[a-z0-9][a-z0-9-]*$": {
+          "$ref": "#/definitions/app"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["schema", "defaults", "apps"],
+  "additionalProperties": false,
+  "definitions": {
+    "profile": {
+      "description": "Build settings. App overrides may specify only the fields they change.",
+      "type": "object",
+      "properties": {
+        "build_environment": {
+          "type": "string",
+          "enum": ["dev", "qa", "preview", "production"],
+          "description": "Destination-specific .env profile used during the build; TVA uses dev by default."
+        },
+        "release_channel": {
+          "type": "string",
+          "enum": ["canary", "beta", "stable"],
+          "description": "Release channel used during the build."
+        },
+        "debug": {
+          "type": "boolean",
+          "description": "Whether the build enables debug mode."
+        }
+      },
+      "additionalProperties": false
+    },
+    "completeProfile": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/profile"
+        },
+        {
+          "type": "object",
+          "required": ["build_environment", "release_channel", "debug"]
+        }
+      ]
+    },
+    "credentialSecret": {
+      "type": "string",
+      "pattern": "^[A-Z_][A-Z0-9_]*$",
+      "description": "Name of a GitHub Actions secret containing the Firebase service account credentials. Do not put the credential value here."
+    },
+    "app": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Category used by schedulers, such as cdns, internals, platforms, pods, suites or widgets."
+        },
+        "repository": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$",
+          "description": "Source repository in owner/repository form."
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.-]+(?:/[a-zA-Z0-9_.-]+)*$",
+          "not": {
+            "pattern": "(^|/)\\.{1,2}(/|$)"
+          },
+          "description": "App directory relative to the source repository root. Absolute paths and . or .. path segments are not allowed."
+        },
+        "credential_secrets": {
+          "type": "object",
+          "properties": {
+            "tva": {
+              "$ref": "#/definitions/credentialSecret"
+            },
+            "dev": {
+              "$ref": "#/definitions/credentialSecret"
+            },
+            "qa": {
+              "$ref": "#/definitions/credentialSecret"
+            },
+            "preview": {
+              "$ref": "#/definitions/credentialSecret"
+            },
+            "production": {
+              "$ref": "#/definitions/credentialSecret"
+            }
+          },
+          "required": ["tva", "dev", "qa", "preview", "production"],
+          "additionalProperties": false
+        },
+        "environments": {
+          "description": "Optional per-environment overrides merged with shared defaults, field by field.",
+          "type": "object",
+          "properties": {
+            "tva": {
+              "$ref": "#/definitions/profile"
+            },
+            "dev": {
+              "$ref": "#/definitions/profile"
+            },
+            "qa": {
+              "$ref": "#/definitions/profile"
+            },
+            "preview": {
+              "$ref": "#/definitions/profile"
+            },
+            "production": {
+              "$ref": "#/definitions/profile"
+            }
+          },
+          "additionalProperties": false
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to exclude this app from manual and scheduled deployments."
+        }
+      },
+      "required": ["category", "repository", "path", "credential_secrets"],
+      "additionalProperties": false
+    }
+  }
+}

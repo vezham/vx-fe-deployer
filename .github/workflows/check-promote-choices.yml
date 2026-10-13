@@ -1,0 +1,27 @@
+name: Check promotion app choices
+
+on:
+  pull_request:
+    paths:
+      - .github/config/web-apps.yaml
+      - .github/workflows/-promote.yml
+      - .github/workflows/check-promote-choices.yml
+  push:
+    branches:
+      - timeline
+    paths:
+      - .github/config/web-apps.yaml
+      - .github/workflows/-promote.yml
+      - .github/workflows/check-promote-choices.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check generated promotion app choices
+        uses: vezham/vx-deployer/.github/actions/deployment/sync-promote-choices@timeline

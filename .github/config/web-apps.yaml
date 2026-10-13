@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../../vx/schemas/web-apps.json
+schema: 1
+
+# Shared build profiles; app entries can override individual fields.
+defaults:
+  environments:
+    tva:
+      build_environment: dev
+      release_channel: beta
+      debug: true
+    dev:
+      build_environment: dev
+      release_channel: beta
+      debug: true
+    qa:
+      build_environment: qa
+      release_channel: beta
+      debug: false
+    preview:
+      build_environment: preview
+      release_channel: stable
+      debug: false
+    production:
+      build_environment: production
+      release_channel: stable
+      debug: false
+
+# One entry per app. Store secret names here; keep values in Actions secrets.
+apps:
+  static-cdn:
+    category: cdns
+    repository: vezham/vx-fe-apps-cdns
+    path: apps-cdns/static-cdn
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
