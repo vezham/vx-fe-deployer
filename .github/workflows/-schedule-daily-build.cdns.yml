@@ -8,6 +8,13 @@ on:
     - cron: '30 19,20,21,22 13 10 *' # TEMP test: 14 Oct 2026 at 01:00, 02:00, 03:00, 04:00 AM IST; remove after testing
   workflow_dispatch:
 
+run-name: >
+  🚀 BnD • ${{
+      github.event_name == 'schedule' && '🕒 Scheduled •' ||
+      github.event_name == 'workflow_dispatch' && '⚡ Trails •'
+  }} cdns | daily-build
+  - by @${{ github.actor || 'vx/ci' }}
+
 permissions:
   contents: write
   statuses: write
