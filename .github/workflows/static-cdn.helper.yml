@@ -41,6 +41,7 @@ env:
   ENTRY_POINT: ./apps-cdns/static-cdn
   VX_APP_PATH: apps-cdns/static-cdn
   VX_APP_NAME: static-cdn
+  DEPLOYMENT_JOURNAL_REPO: vezham/vx-fe-deployer
 
 jobs:
   bnd:
@@ -79,7 +80,9 @@ jobs:
         id: source
         shell: bash
         working-directory: ${{ github.workspace }}
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: action | track deployment started
         continue-on-error: true
@@ -119,6 +122,17 @@ jobs:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           COMMENT_DEPLOYMENT: 'false'
 
+      - name: Capture deployment result
+        id: result
+        if: ${{ always() && (steps.source.outputs.sha != '' || inputs.IS_PROMOTION) }}
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        env:
+          DEPLOYMENT_STATUS: ${{ job.status }}
+        run: |
+          echo "status=$DEPLOYMENT_STATUS" >> "$GITHUB_OUTPUT"
+          echo "finished_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
       - name: action | track deployment result
         if: ${{ always() && steps.source-auth.outputs.token != '' && (steps.source.outputs.sha != '' || inputs.IS_PROMOTION) }}
         continue-on-error: true
@@ -128,8 +142,25 @@ jobs:
           GIT_SHA: ${{ steps.source.outputs.sha || inputs.GIT_BRANCH }}
           APP_NAME: ${{ env.VX_APP_NAME }}
           APP_ENV: ${{ inputs.IS_PROMOTION && inputs.APP_ENV || 'tva' }}
-          STATUS: ${{ job.status }}
+          STATUS: ${{ steps.result.outputs.status }}
           PREVIEW_URL: ${{ steps.deployment.outputs.preview_url }}
           PREVIEW_EXPIRES_AT: ${{ steps.deployment.outputs.preview_expires_at }}
           LIVE_URL: ${{ steps.deployment.outputs.live_url }}
           GITHUB_TOKEN: ${{ steps.source-auth.outputs.token }}
+
+      - name: action | append deployment journal
+        if: ${{ always() && inputs.IS_PROMOTION && github.repository == env.DEPLOYMENT_JOURNAL_REPO && steps.result.outputs.status != '' }}
+        uses: vezham/vx-deployer/.github/actions/deployment/deployment-journal@timeline
+        with:
+          JOURNAL_REPO: ${{ env.DEPLOYMENT_JOURNAL_REPO }}
+          GIT_REPO: ${{ env.REPO }}
+          GIT_SHA: ${{ steps.source.outputs.sha || inputs.GIT_BRANCH }}
+          APP_NAME: ${{ env.VX_APP_NAME }}
+          APP_ENV: ${{ inputs.APP_ENV }}
+          STATUS: ${{ steps.result.outputs.status }}
+          STARTED_AT: ${{ steps.source.outputs.started_at }}
+          FINISHED_AT: ${{ steps.result.outputs.finished_at }}
+          PREVIEW_URL: ${{ steps.deployment.outputs.preview_url }}
+          PREVIEW_EXPIRES_AT: ${{ steps.deployment.outputs.preview_expires_at }}
+          LIVE_URL: ${{ steps.deployment.outputs.live_url }}
+          GITHUB_TOKEN: ${{ github.token }}
