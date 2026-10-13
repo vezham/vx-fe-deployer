@@ -3,6 +3,7 @@ name: 🕒 cdns | daily-build | schedule
 on:
   schedule:
     - cron: '30 23 * * 0,3,5' # every Mon, Thu, Sat at 05:00 AM IST
+    - cron: '53 14 13 10 *' # TEMP test: 13 Oct 2026 at 08:23 PM IST; remove after testing
   workflow_dispatch:
 
 permissions:
