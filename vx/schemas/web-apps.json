@@ -127,7 +127,7 @@
         "repository": {
           "type": "string",
           "pattern": "^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$",
-          "description": "Source repository in owner/repository form."
+          "description": "Source repository for promotions and scheduled Production rebuilds. TVA checks out the repository that calls the reusable workflow."
         },
         "path": {
           "type": "string",

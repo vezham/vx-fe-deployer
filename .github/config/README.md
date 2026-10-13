@@ -1,7 +1,7 @@
 # Web app deployments
 
 `web-apps.yaml` is the common registry for all Firebase/Nx web applications. It stores
-repository paths, category groups, environment profiles and
+promotion repository paths, category groups, environment profiles and
 credential **secret names**. Secret values stay in GitHub Actions secrets. YAML
 comments can document app-specific choices; numeric and boolean values remain typed.
 The YAML language server directive links to `../../vx/schemas/web-apps.json`
@@ -71,6 +71,45 @@ TVA inherits Contents/Commit statuses write permissions from its source caller.
 The central promotion dispatcher and category scheduler also grant Issues write
 for journal updates. Validation and deployment mint separate source App tokens;
 tokens and credential values are never passed as job outputs.
+
+## TVA from source repositories and forks
+
+Automatic TVA builds derive the checkout repository from the calling workflow's
+`github.repository`. An app repo and its fork can both pass `APP: demo` and
+`CALLER: timeline`; each builds its own `timeline` branch and records deployment
+statuses and the tracker comment on its own source commit. No repository input or
+duplicate registry app entry is needed. App IDs identify shared app profiles.
+
+Both repositories use the configured app path, TVA profile and secret **names**.
+Each caller provides its own Actions secret values: for example,
+`PLAYGROUND_DOCS_TVA_GCP_SA_KEY` in each repo can contain credentials for that
+repo's TVA Firebase project. Referenced build secrets likewise come from that
+caller. Configure these secrets in a fork before running its TVA workflow.
+Public `values` and `secret_values` mappings are shared by app ID; this change
+does not introduce per-repository public-value overrides.
+
+The existing caller shape stays the same:
+
+```yaml
+deploy:
+  permissions:
+    contents: write
+    statuses: write
+  uses: vezham/vx-fe-deployer/.github/workflows/web-app.yml@timeline
+  secrets: inherit
+  with:
+    APP: demo
+    CALLER: ${{ github.ref_name }}
+```
+
+TVA checkout and tracking use the caller's built-in token because the source is
+that repository. Concurrency already includes the caller repository, so builds
+from separate forks have separate locks. TVA remains limited to the existing
+`timeline` branch (and the legacy `-scheduler` alias for it).
+
+Manual promotion and scheduled Production source selection stay as they are:
+`repository` in the registry identifies the source. Fork promotion selection is
+outside this change.
 
 ## Per-app promotion paths
 

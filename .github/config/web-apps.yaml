@@ -25,6 +25,7 @@ defaults:
 
 # vx-bot/NOTE: Migration entries use planned source repositories and paths.
 # Update each source app before switching its caller to the shared web workflow.
+# TVA builds the calling repository; repository below selects the promotion source.
 # Store secret names here; keep credential values in Actions secrets.
 # Optional values and secret_values inherit defaults → app → environment → target.
 # Optional production_targets belong to each app; omit for one default Production deployment.
