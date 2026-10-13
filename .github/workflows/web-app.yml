@@ -58,6 +58,7 @@ jobs:
           APP_NAME: ${{ steps.app.outputs.app }}
           GIT_REPO: ${{ steps.app.outputs.repository }}
           TRACK_ENV: ${{ steps.app.outputs.track_environment }}
+          PROMOTION_PATH: ${{ steps.app.outputs.promotion_path }}
           GIT_REF: ${{ steps.app.outputs.git_ref }}
           GIT_SHA: ${{ inputs.GIT_SHA }}
           USE_LATEST_PRODUCTION: ${{ inputs.USE_LATEST_PRODUCTION }}

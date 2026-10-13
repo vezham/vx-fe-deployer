@@ -1,11 +1,11 @@
 # Web app deployments
 
 `web-apps.yaml` is the common registry for all Firebase/Nx web applications. It stores
-repository paths, category IDs, environment profiles and
+repository paths, category groups, environment profiles and
 credential **secret names**. Secret values stay in GitHub Actions secrets. YAML
 comments can document app-specific choices; numeric and boolean values remain typed.
 The YAML language server directive links to `../../vx/schemas/web-apps.json`
-for editor validation and autocomplete. `schema: 1` remains the registry format version.
+for editor validation and autocomplete. `schema: 2` identifies the grouped registry format.
 
 Shared defaults preserve the current profiles: TVA builds Dev/Beta with debug
 enabled, Dev builds Dev/Beta with debug enabled, QA builds QA/Beta without debug,
@@ -25,6 +25,32 @@ Static CDN deliberately retains `PLAYGROUND_DOCS_TVA_GCP_SA_KEY` for every
 environment. Change its `credential_secrets` entries when the separate projects
 are configured; there is no automatic credential fallback between environments.
 
+## Category groups
+
+Keep one registry with shared `defaults` and top-level app groups. The group
+determines the scheduler category: `apps` maps to `apps`, `apps-cdns` to `cdns`,
+and similarly for the other groups. App entries have no `category` field.
+Promotion lookup and dropdown generation search every group by globally unique
+app ID. Duplicate IDs, including disabled entries, are rejected.
+
+```yaml
+schema: 2
+defaults:
+  environments: # Shared build profiles
+    # ...
+apps:
+  books:
+    # repository, path, credential_secrets
+  demo:
+    # repository, path, credential_secrets
+apps-cdns:
+  static-cdn:
+    # repository, path, credential_secrets
+apps-internals:
+  home:
+    # repository, path, credential_secrets
+```
+
 ## Workflow ownership
 
 Each app needs one source-repository trigger and one registry entry. The trigger
@@ -37,19 +63,51 @@ deployer wrappers, helper and promotion workflows are unnecessary.
 The shared execution still builds with destination-specific `.env` values.
 It deploys both Firebase preview and live channels, updates the source commit
 tracker, and journals completed Dev/QA/Preview/Production attempts centrally.
-TVA stays in the source commit tracker only. Promotion prerequisites remain
-TVA → Dev → QA → Preview → Production for the same app and full SHA.
+TVA stays in the source commit tracker only. Promotion defaults to
+TVA → Dev → QA → Preview → Production for the same app and full SHA. Apps may
+shorten that path explicitly, independently of their category.
 
 TVA inherits Contents/Commit statuses write permissions from its source caller.
 The central promotion dispatcher and category scheduler also grant Issues write
 for journal updates. Validation and deployment mint separate source App tokens;
 tokens and credential values are never passed as job outputs.
 
+## Per-app promotion paths
+
+Add an optional `promotion_path` to any app entry to skip stages. Omission keeps
+`[tva, dev, qa, preview, production]`. Category does not affect this policy.
+
+```yaml
+apps-cdns:
+  static-cdn:
+    promotion_path: [tva, preview, production]
+    # repository, path, credential_secrets
+  another-cdn:
+    promotion_path: [tva, production]
+    # repository, path, credential_secrets
+```
+
+These are configuration examples; existing entries keep the full order until an
+explicit override is added. Every path must begin with TVA, end with Production
+and follow the standard stage order without duplicates. Each destination requires
+a successful deployment of the preceding included stage for the same app and SHA.
+For the first example, Preview requires TVA and Production requires Preview; for
+the second, Production requires TVA. Destinations omitted from the path fail
+validation even if selected in the shared environment dropdown.
+
+Manual promotions and scheduled Production rebuilds use the same path. The run
+summary records the selected path and prerequisite deployment. Skipped stages
+are never marked successful in source tracking or the journal. Keep credential
+mappings for all five environments in the registry; stage selection controls
+which environments can be deployed. Update the shared `vx-deployer` actions
+before publishing workflow wiring or app overrides in `vx-fe-deployer`.
+
 ## Add an app
 
-1. Add an app entry with `category`, `repository`, `path` and all five
-   `credential_secrets` mappings. App IDs use lowercase letters, digits and
-   hyphens. The app must have Nx build/deploy-generation targets and a Firebase
+1. Add an app under its top-level group (`apps`, `apps-cdns`, `apps-internals`,
+   `apps-platforms`, `apps-pods`, `apps-suites` or `apps-widgets`), with
+   `repository`, `path` and all five `credential_secrets` mappings. App IDs use
+   lowercase letters, digits and hyphens and must be unique across all groups. The app must have Nx build/deploy-generation targets and a Firebase
    config at `vx/deploy/firebase/<app path>.json`, as existing web apps do.
 2. Add a source-repository trigger that calls the shared web app workflow
    directly, with the registry app ID, `CALLER` and inherited secrets:
@@ -89,12 +147,75 @@ each app's latest successful Production SHA. Set `enabled: false` to exclude
 an app from manual and scheduled deployment. Other category schedulers retain
 their existing implementations until migrated.
 
+## Migration targets
+
+The registry includes the existing Static CDN plus 21 Firebase web app migration
+targets derived from the old wrappers. Entries use planned `vx-fe-apps-*` source
+repositories and hyphenated app IDs and directories. Books and Demo use
+`vx-fe-apps` with `apps/books` and `apps/demo`; Home uses `vx-fe-apps-internals`
+with `apps-internals/home`. These target repositories and app directories still
+need the source-side migration before their callers use the shared workflow.
+
+Existing per-environment credential secret names are preserved, including shared
+TVA credentials in the playground workflows and the Home-to-Playground mappings.
+Old `live` credentials map to `production`. The Static CDN mapping is unchanged.
+Old wrappers and category schedulers remain available during source migration;
+native desktop and Vercel mock apps are excluded.
+
+| Old workflow / app                        | Registry app ID   | Planned app path                 |
+| ----------------------------------------- | ----------------- | -------------------------------- |
+| `apps-books.yml` / `books`                | `books`           | `apps/books`                     |
+| `play-demo.yml` / `demo`                  | `demo`            | `apps/demo`                      |
+| `vezham-home.yml` / `home`                | `home`            | `apps-internals/home`            |
+| `playbook.yml` / `playbook`               | `playbook`        | `apps-internals/playbook`        |
+| `playground.yml` / `playground`           | `playground`      | `apps-internals/playground`      |
+| `playground-app.yml` / `playground-app`   | `playground-app`  | `apps-internals/playground-app`  |
+| `playground-cdn.yml` / `playground-cdn`   | `playground-cdn`  | `apps-internals/playground-cdn`  |
+| `playground-docs.yml` / `playground-docs` | `playground-docs` | `apps-internals/playground-docs` |
+| `storybook.yml` / `storybook`             | `storybook`       | `apps-internals/storybook`       |
+| `storybook-sb.yml` / `storybook-sb`       | `storybook-sb`    | `apps-internals/storybook-sb`    |
+| `academy.yml` / `academy`                 | `academy`         | `apps-platforms/academy`         |
+| `blogs.yml` / `blogs`                     | `blogs`           | `apps-platforms/blogs`           |
+| `help_center.yml` / `help_center`         | `help-center`     | `apps-platforms/help-center`     |
+| `policy_center.yml` / `policy_center`     | `policy-center`   | `apps-platforms/policy-center`   |
+| `whats_new.yml` / `whats_new`             | `whats-new`       | `apps-platforms/whats-new`       |
+| `accounts.yml` / `accounts`               | `accounts`        | `apps-pods/accounts`             |
+| `business.yml` / `business`               | `business`        | `apps-pods/business`             |
+| `iam.yml` / `iam`                         | `iam`             | `apps-pods/iam`                  |
+| `hq.yml` / `hq`                           | `hq`              | `apps-suites/hq`                 |
+| `one.yml` / `one`                         | `one`             | `apps-suites/one`                |
+| `chat_widget.yml` / `chat_widget`         | `chat-widget`     | `apps-widgets/chat-widget`       |
+
+The shared flow uses the Static CDN build inputs (`V_APP_NAME`, `V_APP_ENV`,
+`V_RELEASE_CHANNEL`, `V_IS_DEBUG`). Source migration must handle the following
+legacy differences before those apps are deployed through the shared flow:
+
+- Accounts, Business, IAM and HQ previously passed API, IAM, account, business,
+  HQ and sandbox URLs and flags. Chat Widget passed API and widget URLs.
+- Playground, Playbook and Home previously passed mock/API URL inputs.
+- Storybook SB used the Storybook project and `storybook-sb` Firebase config,
+  plus a Figma access-token secret. Its new registry entry expects a separate
+  `storybook-sb` app with the standard Nx targets and deploy config.
+- Chat Widget had US/EU/IN/AU production jobs using one credential secret.
+  The baseline registry records one production environment; regional deployment
+  needs a separate migration before replacing those jobs.
+
+Each migrated source app must provide a Node runtime declaration in its app or
+workspace `package.json`, a pnpm package-manager declaration, standard Nx build
+and deployment-generation targets, and `vx/deploy/firebase/<app path>.json`.
+Install source App access and pass `APP: <registry ID>` with `CALLER: timeline`
+from its caller. The first configured promotion stage requires a successful TVA
+deployment for the same app and SHA.
+
 ## Registry version and publishing
 
 Central runs read the registry at the caller commit SHA. TVA reads it from
 `vezham/vx-fe-deployer@timeline`, matching its reusable workflow references.
 The registry is public in the current repository; making this repository private
 requires a token with read access for source-repository TVA callers.
+
+The grouped `schema: 2` format is the baseline. The resolver rejects other
+registry versions.
 
 Publish `vx-deployer` to `timeline` before publishing this refactor in
 `vx-fe-deployer`, so the new shared actions/workflow exist when callers run.

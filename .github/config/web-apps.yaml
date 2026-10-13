@@ -1,7 +1,5 @@
 # yaml-language-server: $schema=../../vx/schemas/web-apps.json
-schema: 1
-
-# Shared build profiles; app entries can override individual fields.
+schema: 2
 defaults:
   environments:
     tva:
@@ -25,10 +23,36 @@ defaults:
       release_channel: stable
       debug: false
 
-# One entry per app. Store secret names here; keep values in Actions secrets.
+# vx-bot/NOTE: Migration entries use planned source repositories and paths.
+# Update each source app before switching its caller to the shared web workflow.
+# Store secret names here; keep credential values in Actions secrets.
+# vx-bot/INFO: Optional per-app promotion_path skips stages, e.g. [tva, preview, production].
+# Omit promotion_path to keep the full TVA → Dev → QA → Preview → Production order.
+
 apps:
+  books:
+    repository: vezham/vx-fe-apps
+    path: apps/books
+    credential_secrets:
+      tva: APPS_BOOKS_TVA_GCP_SA_KEY
+      dev: APPS_BOOKS_DEV_GCP_SA_KEY
+      qa: APPS_BOOKS_QA_GCP_SA_KEY
+      preview: APPS_BOOKS_PREVIEW_GCP_SA_KEY
+      production: APPS_BOOKS_LIVE_GCP_SA_KEY
+
+  demo:
+    repository: vezham/vx-fe-apps
+    path: apps/demo
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_APP_DEV_GCP_SA_KEY
+      qa: PLAYGROUND_APP_QA_GCP_SA_KEY
+      preview: PLAYGROUND_APP_PREVIEW_GCP_SA_KEY
+      production: PLAYGROUND_APP_LIVE_GCP_SA_KEY
+
+apps-cdns:
   static-cdn:
-    category: cdns
+    promotion_path: [tva, dev, production]
     repository: vezham/vx-fe-apps-cdns
     path: apps-cdns/static-cdn
     credential_secrets:
@@ -37,3 +61,184 @@ apps:
       qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
       preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
       production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+
+apps-internals:
+  home:
+    repository: vezham/vx-fe-apps-internals
+    path: apps-internals/home
+    credential_secrets:
+      tva: PLAYGROUND_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DEV_GCP_SA_KEY
+      qa: PLAYGROUND_QA_GCP_SA_KEY
+      preview: PLAYGROUND_PREVIEW_GCP_SA_KEY
+      production: PLAYGROUND_LIVE_GCP_SA_KEY
+  playbook:
+    repository: vezham/vx-fe-apps-internals
+    path: apps-internals/playbook
+    credential_secrets:
+      tva: PLAYBOOK_TVA_GCP_SA_KEY
+      dev: PLAYBOOK_DEV_GCP_SA_KEY
+      qa: PLAYBOOK_QA_GCP_SA_KEY
+      preview: PLAYBOOK_PREVIEW_GCP_SA_KEY
+      production: PLAYBOOK_LIVE_GCP_SA_KEY
+  playground:
+    repository: vezham/vx-fe-apps-internals
+    path: apps-internals/playground
+    credential_secrets:
+      tva: PLAYGROUND_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DEV_GCP_SA_KEY
+      qa: PLAYGROUND_QA_GCP_SA_KEY
+      preview: PLAYGROUND_PREVIEW_GCP_SA_KEY
+      production: PLAYGROUND_LIVE_GCP_SA_KEY
+  playground-app:
+    repository: vezham/vx-fe-apps-internals
+    path: apps-internals/playground-app
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_APP_DEV_GCP_SA_KEY
+      qa: PLAYGROUND_APP_QA_GCP_SA_KEY
+      preview: PLAYGROUND_APP_PREVIEW_GCP_SA_KEY
+      production: PLAYGROUND_APP_LIVE_GCP_SA_KEY
+  playground-cdn:
+    repository: vezham/vx-fe-apps-internals
+    path: apps-internals/playground-cdn
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_CDN_DEV_GCP_SA_KEY
+      qa: PLAYGROUND_CDN_QA_GCP_SA_KEY
+      preview: PLAYGROUND_CDN_PREVIEW_GCP_SA_KEY
+      production: PLAYGROUND_CDN_LIVE_GCP_SA_KEY
+  playground-docs:
+    repository: vezham/vx-fe-apps-internals
+    path: apps-internals/playground-docs
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DOCS_DEV_GCP_SA_KEY
+      qa: PLAYGROUND_DOCS_QA_GCP_SA_KEY
+      preview: PLAYGROUND_DOCS_PREVIEW_GCP_SA_KEY
+      production: PLAYGROUND_DOCS_LIVE_GCP_SA_KEY
+  storybook:
+    repository: vezham/vx-fe-apps-internals
+    path: apps-internals/storybook
+    credential_secrets:
+      tva: STORYBOOK_TVA_GCP_SA_KEY
+      dev: STORYBOOK_DEV_GCP_SA_KEY
+      qa: STORYBOOK_QA_GCP_SA_KEY
+      preview: STORYBOOK_PREVIEW_GCP_SA_KEY
+      production: STORYBOOK_LIVE_GCP_SA_KEY
+  storybook-sb:
+    repository: vezham/vx-fe-apps-internals
+    path: apps-internals/storybook-sb
+    credential_secrets:
+      tva: STORYBOOK_SB_TVA_GCP_SA_KEY
+      dev: STORYBOOK_SB_DEV_GCP_SA_KEY
+      qa: STORYBOOK_SB_QA_GCP_SA_KEY
+      preview: STORYBOOK_SB_PREVIEW_GCP_SA_KEY
+      production: STORYBOOK_SB_LIVE_GCP_SA_KEY
+
+apps-platforms:
+  academy:
+    repository: vezham/vx-fe-apps-platforms
+    path: apps-platforms/academy
+    credential_secrets:
+      tva: ACADEMY_TVA_GCP_SA_KEY
+      dev: ACADEMY_DEV_GCP_SA_KEY
+      qa: ACADEMY_QA_GCP_SA_KEY
+      preview: ACADEMY_PREVIEW_GCP_SA_KEY
+      production: ACADEMY_LIVE_GCP_SA_KEY
+  blogs:
+    repository: vezham/vx-fe-apps-platforms
+    path: apps-platforms/blogs
+    credential_secrets:
+      tva: BLOGS_TVA_GCP_SA_KEY
+      dev: BLOGS_DEV_GCP_SA_KEY
+      qa: BLOGS_QA_GCP_SA_KEY
+      preview: BLOGS_PREVIEW_GCP_SA_KEY
+      production: BLOGS_LIVE_GCP_SA_KEY
+  help-center:
+    repository: vezham/vx-fe-apps-platforms
+    path: apps-platforms/help-center
+    credential_secrets:
+      tva: HELP_CENTER_TVA_GCP_SA_KEY
+      dev: HELP_CENTER_DEV_GCP_SA_KEY
+      qa: HELP_CENTER_QA_GCP_SA_KEY
+      preview: HELP_CENTER_PREVIEW_GCP_SA_KEY
+      production: HELP_CENTER_LIVE_GCP_SA_KEY
+  policy-center:
+    repository: vezham/vx-fe-apps-platforms
+    path: apps-platforms/policy-center
+    credential_secrets:
+      tva: POLICY_CENTER_TVA_GCP_SA_KEY
+      dev: POLICY_CENTER_DEV_GCP_SA_KEY
+      qa: POLICY_CENTER_QA_GCP_SA_KEY
+      preview: POLICY_CENTER_PREVIEW_GCP_SA_KEY
+      production: POLICY_CENTER_LIVE_GCP_SA_KEY
+  whats-new:
+    repository: vezham/vx-fe-apps-platforms
+    path: apps-platforms/whats-new
+    credential_secrets:
+      tva: WHATS_NEW_TVA_GCP_SA_KEY
+      dev: WHATS_NEW_DEV_GCP_SA_KEY
+      qa: WHATS_NEW_QA_GCP_SA_KEY
+      preview: WHATS_NEW_PREVIEW_GCP_SA_KEY
+      production: WHATS_NEW_LIVE_GCP_SA_KEY
+
+apps-pods:
+  accounts:
+    repository: vezham/vx-fe-apps-pods
+    path: apps-pods/accounts
+    credential_secrets:
+      tva: ACCOUNTS_TVA_GCP_SA_KEY
+      dev: ACCOUNTS_DEV_GCP_SA_KEY
+      qa: ACCOUNTS_QA_GCP_SA_KEY
+      preview: ACCOUNTS_PREVIEW_GCP_SA_KEY
+      production: ACCOUNTS_LIVE_GCP_SA_KEY
+  business:
+    repository: vezham/vx-fe-apps-pods
+    path: apps-pods/business
+    credential_secrets:
+      tva: BUSINESS_TVA_GCP_SA_KEY
+      dev: BUSINESS_DEV_GCP_SA_KEY
+      qa: BUSINESS_QA_GCP_SA_KEY
+      preview: BUSINESS_PREVIEW_GCP_SA_KEY
+      production: BUSINESS_LIVE_GCP_SA_KEY
+  iam:
+    repository: vezham/vx-fe-apps-pods
+    path: apps-pods/iam
+    credential_secrets:
+      tva: IAM_TVA_GCP_SA_KEY
+      dev: IAM_DEV_GCP_SA_KEY
+      qa: IAM_QA_GCP_SA_KEY
+      preview: IAM_PREVIEW_GCP_SA_KEY
+      production: IAM_LIVE_GCP_SA_KEY
+
+apps-suites:
+  hq:
+    repository: vezham/vx-fe-apps-suites
+    path: apps-suites/hq
+    credential_secrets:
+      tva: HQ_TVA_GCP_SA_KEY
+      dev: HQ_DEV_GCP_SA_KEY
+      qa: HQ_QA_GCP_SA_KEY
+      preview: HQ_PREVIEW_GCP_SA_KEY
+      production: HQ_LIVE_GCP_SA_KEY
+  one:
+    repository: vezham/vx-fe-apps-suites
+    path: apps-suites/one
+    credential_secrets:
+      tva: ONE_TVA_GCP_SA_KEY
+      dev: ONE_DEV_GCP_SA_KEY
+      qa: ONE_QA_GCP_SA_KEY
+      preview: ONE_PREVIEW_GCP_SA_KEY
+      production: ONE_LIVE_GCP_SA_KEY
+
+apps-widgets:
+  chat-widget:
+    repository: vezham/vx-fe-apps-widgets
+    path: apps-widgets/chat-widget
+    credential_secrets:
+      tva: CHAT_WIDGET_TVA_GCP_SA_KEY
+      dev: CHAT_WIDGET_DEV_GCP_SA_KEY
+      qa: CHAT_WIDGET_QA_GCP_SA_KEY
+      preview: CHAT_WIDGET_PREVIEW_GCP_SA_KEY
+      production: CHAT_WIDGET_LIVE_GCP_SA_KEY

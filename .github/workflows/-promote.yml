@@ -14,7 +14,28 @@ on:
         # vx-bot/INFO: Generated app choices from web-apps.yaml; do not edit.
         type: choice
         options:
+          - academy
+          - accounts
+          - blogs
+          - books
+          - business
+          - chat-widget
+          - demo
+          - help-center
+          - home
+          - hq
+          - iam
+          - one
+          - playbook
+          - playground
+          - playground-app
+          - playground-cdn
+          - playground-docs
+          - policy-center
           - static-cdn
+          - storybook
+          - storybook-sb
+          - whats-new
         # vx-bot/INFO: End generated app choices.
       APP_ENV:
         description: Destination environment

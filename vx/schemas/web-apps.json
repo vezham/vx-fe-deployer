@@ -2,12 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://vezham.com/schemas/web-apps.json",
   "title": "Vx web app deployment registry",
-  "description": "Shared build defaults and per-app configuration for Firebase/Nx web deployments. Store credential secret names, never secret values.",
+  "description": "Shared build defaults and category groups for Firebase/Nx web deployments. App IDs must be globally unique across groups. Store secret names, never secret values.",
   "type": "object",
   "properties": {
     "schema": {
       "type": "integer",
-      "const": 1,
+      "const": 2,
       "description": "Registry format version."
     },
     "defaults": {
@@ -41,17 +41,35 @@
       "additionalProperties": false
     },
     "apps": {
-      "type": "object",
-      "description": "One entry per app, keyed by its lowercase registry ID.",
-      "patternProperties": {
-        "^[a-z0-9][a-z0-9-]*$": {
-          "$ref": "#/definitions/app"
-        }
-      },
-      "additionalProperties": false
+      "$ref": "#/definitions/appGroup",
+      "description": "apps web applications."
+    },
+    "apps-cdns": {
+      "$ref": "#/definitions/appGroup",
+      "description": "cdns web applications."
+    },
+    "apps-internals": {
+      "$ref": "#/definitions/appGroup",
+      "description": "internals web applications."
+    },
+    "apps-platforms": {
+      "$ref": "#/definitions/appGroup",
+      "description": "platforms web applications."
+    },
+    "apps-pods": {
+      "$ref": "#/definitions/appGroup",
+      "description": "pods web applications."
+    },
+    "apps-suites": {
+      "$ref": "#/definitions/appGroup",
+      "description": "suites web applications."
+    },
+    "apps-widgets": {
+      "$ref": "#/definitions/appGroup",
+      "description": "widgets web applications."
     }
   },
-  "required": ["schema", "defaults", "apps"],
+  "required": ["schema", "defaults"],
   "additionalProperties": false,
   "definitions": {
     "profile": {
@@ -94,11 +112,6 @@
     "app": {
       "type": "object",
       "properties": {
-        "category": {
-          "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9-]*$",
-          "description": "Category used by schedulers, such as cdns, internals, platforms, pods, suites or widgets."
-        },
         "repository": {
           "type": "string",
           "pattern": "^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$",
@@ -160,10 +173,46 @@
           "type": "boolean",
           "default": true,
           "description": "Set false to exclude this app from manual and scheduled deployments."
+        },
+        "promotion_path": {
+          "$ref": "#/definitions/promotionPath"
         }
       },
-      "required": ["category", "repository", "path", "credential_secrets"],
+      "required": ["repository", "path", "credential_secrets"],
       "additionalProperties": false
+    },
+    "appGroup": {
+      "type": "object",
+      "description": "App entries keyed by globally unique lowercase IDs. Category is derived from the top-level group name.",
+      "patternProperties": {
+        "^[a-z0-9][a-z0-9-]*$": {
+          "$ref": "#/definitions/app"
+        }
+      },
+      "additionalProperties": false
+    },
+    "promotionPath": {
+      "type": "array",
+      "description": "Allowed promotion stages for this app, independent of category. Start with tva, end with production, preserve standard order and omit stages to skip them.",
+      "items": {
+        "type": "string",
+        "enum": ["tva", "dev", "qa", "preview", "production"]
+      },
+      "minItems": 2,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "enum": [
+        ["tva", "production"],
+        ["tva", "dev", "production"],
+        ["tva", "qa", "production"],
+        ["tva", "dev", "qa", "production"],
+        ["tva", "preview", "production"],
+        ["tva", "dev", "preview", "production"],
+        ["tva", "qa", "preview", "production"],
+        ["tva", "dev", "qa", "preview", "production"]
+      ],
+      "default": ["tva", "dev", "qa", "preview", "production"]
     }
-  }
+  },
+  "minProperties": 3
 }
