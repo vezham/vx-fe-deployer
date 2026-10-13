@@ -1,14 +1,20 @@
-name: daily-build/cdns | schedule
+name: 🕒 cdns | daily-build | schedule
 
 on:
   schedule:
-    - cron: '30 23 * * 0,3,5'
+    - cron: '30 23 * * 0,3,5' # every Mon, Thu, Sat at 05:00 AM IST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  statuses: write
+  issues: write
 
 jobs:
-  # v0xFE-apps-cdns
   static-cdn:
-    name: scheduler | static-cdn
-    uses: vezham/vx-fe-deployer/.github/workflows/static-cdn.yml@timeline
+    name: 🕒 static-cdn | production
+    uses: vezham/vx-fe-deployer/.github/workflows/static-cdn-promote.yml@timeline
     secrets: inherit
     with:
-      CALLER: scheduler
+      APP_ENV: production
+      USE_LATEST_PRODUCTION: true
