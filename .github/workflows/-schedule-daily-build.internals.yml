@@ -1,28 +1,48 @@
-name: daily-build/internals | schedule
+name: 🕒 internals | daily-build | schedule
 
 on:
   schedule:
-    - cron: '30 23 * * 0,3,5'
+    - cron: '30 23 * * 0,3,5' # every Mon, Thu, Sat at 05:00 AM IST
+  workflow_dispatch:
+
+run-name: >
+  🚀 BnD • ${{
+      github.event_name == 'schedule' && '🕒 Scheduled •' ||
+      github.event_name == 'workflow_dispatch' && '⚡ Trails •'
+  }} internals | daily-build - by @${{ github.actor || 'vx/ci' }}
+
+permissions:
+  contents: write
+  statuses: write
+  issues: write
 
 jobs:
-  # v0xFE-apps-internals
-  playground:
-    name: scheduler | playground
-    uses: vezham/vx-fe-deployer/.github/workflows/playground.yml@timeline
-    secrets: inherit
-    with:
-      CALLER: scheduler
+  apps:
+    name: Resolve internals apps
+    runs-on: ubuntu-latest
+    outputs:
+      deployments: ${{ steps.apps.outputs.deployments }}
+    steps:
+      - name: action | list internals apps
+        id: apps
+        uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
+        with:
+          CONFIG_REPO: vezham/vx-fe-deployer
+          CONFIG_REF: ${{ github.sha }}
+          CATEGORY: internals
 
-  storybook-sb:
-    name: scheduler | storybook-sb
-    uses: vezham/vx-fe-deployer/.github/workflows/storybook-sb.yml@timeline
+  production:
+    name: 🕒 ${{ matrix.app }} | production${{ matrix.target != 'default' && format(' | {0}', matrix.target) || '' }}
+    needs: apps
+    if: ${{ needs.apps.outputs.deployments != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.apps.outputs.deployments) }}
+    uses: vezham/vx-fe-deployer/.github/workflows/web-app.yml@timeline
     secrets: inherit
     with:
-      CALLER: scheduler
-
-  storybook:
-    name: scheduler | storybook
-    uses: vezham/vx-fe-deployer/.github/workflows/storybook.yml@timeline
-    secrets: inherit
-    with:
-      CALLER: scheduler
+      APP: ${{ matrix.app }}
+      APP_ENV: production
+      USE_LATEST_PRODUCTION: true
+      PRODUCTION_TARGET: ${{ matrix.target }}

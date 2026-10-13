@@ -42,6 +42,10 @@ apps:
       qa: APPS_BOOKS_QA_GCP_SA_KEY
       preview: APPS_BOOKS_PREVIEW_GCP_SA_KEY
       production: APPS_BOOKS_LIVE_GCP_SA_KEY
+    values:
+      V_BASE_API_URL: api
+      V_MOCK_API_URL: ''
+      V_APP_API_URL: ''
 
   demo:
     repository: vezham/vx-fe-apps
@@ -75,6 +79,10 @@ apps-internals:
       qa: PLAYGROUND_QA_GCP_SA_KEY
       preview: PLAYGROUND_PREVIEW_GCP_SA_KEY
       production: PLAYGROUND_LIVE_GCP_SA_KEY
+    values:
+      V_BASE_API_URL: mock
+      V_MOCK_API_URL: https://dev.home.mock.vezham.com
+      V_APP_API_URL: https://dev.api.vezham.com
   playbook:
     repository: vezham/vx-fe-apps-internals
     path: apps-internals/playbook
@@ -84,6 +92,10 @@ apps-internals:
       qa: PLAYBOOK_QA_GCP_SA_KEY
       preview: PLAYBOOK_PREVIEW_GCP_SA_KEY
       production: PLAYBOOK_LIVE_GCP_SA_KEY
+    values:
+      V_BASE_API_URL: mock
+      V_MOCK_API_URL: https://dev.playbook.mock.vezham.com
+      V_APP_API_URL: https://dev.api.vezham.com
   playground:
     repository: vezham/vx-fe-apps-internals
     path: apps-internals/playground
@@ -93,6 +105,10 @@ apps-internals:
       qa: PLAYGROUND_QA_GCP_SA_KEY
       preview: PLAYGROUND_PREVIEW_GCP_SA_KEY
       production: PLAYGROUND_LIVE_GCP_SA_KEY
+    values:
+      V_BASE_API_URL: mock
+      V_MOCK_API_URL: https://dev.playground.mock.vezham.com
+      V_APP_API_URL: https://dev.api.vezham.com
   playground-app:
     repository: vezham/vx-fe-apps-internals
     path: apps-internals/playground-app
@@ -138,6 +154,8 @@ apps-internals:
       qa: STORYBOOK_SB_QA_GCP_SA_KEY
       preview: STORYBOOK_SB_PREVIEW_GCP_SA_KEY
       production: STORYBOOK_SB_LIVE_GCP_SA_KEY
+    secret_values:
+      V_STORYBOOK_FIGMA_ACCESS_TOKEN: STORYBOOK_SB_TVA_FIGMA_AT
 
 apps-platforms:
   academy:
@@ -196,6 +214,50 @@ apps-pods:
       qa: ACCOUNTS_QA_GCP_SA_KEY
       preview: ACCOUNTS_PREVIEW_GCP_SA_KEY
       production: ACCOUNTS_LIVE_GCP_SA_KEY
+    values: &app-api-values
+      V_APP_SANDBOX_API_URL: https://sandbox.api.vezham.com
+      V_APP_DC_API_URL: https://{DC}.api.vezham.com
+    environments: &app-api-environments
+      tva:
+        values:
+          V_APP_API_URL: https://dev.api.vezham.com
+          V_APP_IAM_URL: https://preview.iam.vezham.com
+          V_APP_ACCOUNTS_URL: https://preview.accounts.vezham.com
+          V_APP_BUSINESS_URL: https://preview.business.vezham.com
+          V_APP_HQ_URL: https://preview.hq.vezham.com
+          V_APP_IS_SANDBOX: true
+      dev:
+        values:
+          V_APP_API_URL: https://dev.api.vezham.com
+          V_APP_IAM_URL: https://dev.iam.vezham.com
+          V_APP_ACCOUNTS_URL: https://dev.accounts.vezham.com
+          V_APP_BUSINESS_URL: https://dev.business.vezham.com
+          V_APP_HQ_URL: https://dev.hq.vezham.com
+          V_APP_IS_SANDBOX: true
+      qa:
+        values:
+          V_APP_API_URL: https://qa.api.vezham.com
+          V_APP_IAM_URL: https://qa.iam.vezham.com
+          V_APP_ACCOUNTS_URL: https://qa.accounts.vezham.com
+          V_APP_BUSINESS_URL: https://qa.business.vezham.com
+          V_APP_HQ_URL: https://qa.hq.vezham.com
+          V_APP_IS_SANDBOX: true
+      preview:
+        values:
+          V_APP_API_URL: https://dev.api.vezham.com
+          V_APP_IAM_URL: https://preview.iam.vezham.com
+          V_APP_ACCOUNTS_URL: https://preview.accounts.vezham.com
+          V_APP_BUSINESS_URL: https://preview.business.vezham.com
+          V_APP_HQ_URL: https://preview.hq.vezham.com
+          V_APP_IS_SANDBOX: true
+      production:
+        values:
+          V_APP_API_URL: https://api.vezham.com
+          V_APP_IAM_URL: https://iam.vezham.com
+          V_APP_ACCOUNTS_URL: https://accounts.vezham.com
+          V_APP_BUSINESS_URL: https://business.vezham.com
+          V_APP_HQ_URL: https://hq.vezham.com
+          V_APP_IS_SANDBOX: false
   business:
     repository: vezham/vx-fe-apps-pods
     path: apps-pods/business
@@ -205,6 +267,8 @@ apps-pods:
       qa: BUSINESS_QA_GCP_SA_KEY
       preview: BUSINESS_PREVIEW_GCP_SA_KEY
       production: BUSINESS_LIVE_GCP_SA_KEY
+    values: *app-api-values
+    environments: *app-api-environments
   iam:
     repository: vezham/vx-fe-apps-pods
     path: apps-pods/iam
@@ -214,6 +278,8 @@ apps-pods:
       qa: IAM_QA_GCP_SA_KEY
       preview: IAM_PREVIEW_GCP_SA_KEY
       production: IAM_LIVE_GCP_SA_KEY
+    values: *app-api-values
+    environments: *app-api-environments
 
 apps-suites:
   hq:
@@ -225,6 +291,8 @@ apps-suites:
       qa: HQ_QA_GCP_SA_KEY
       preview: HQ_PREVIEW_GCP_SA_KEY
       production: HQ_LIVE_GCP_SA_KEY
+    values: *app-api-values
+    environments: *app-api-environments
   one:
     repository: vezham/vx-fe-apps-suites
     path: apps-suites/one
@@ -270,3 +338,20 @@ apps-widgets:
         values:
           V_APP_API_URL: https://sg.api.vezham.com
           V_WIDGET_URL: https://sg.widgets.vezham.com
+    environments:
+      tva:
+        values:
+          V_APP_API_URL: https://dev.api.vezham.com
+          V_WIDGET_URL: https://dev.widgets.vezham.com
+      dev:
+        values:
+          V_APP_API_URL: https://dev.api.vezham.com
+          V_WIDGET_URL: https://dev.widgets.vezham.com
+      qa:
+        values:
+          V_APP_API_URL: https://qa.api.vezham.com
+          V_WIDGET_URL: https://qa.widgets.vezham.com
+      preview:
+        values:
+          V_APP_API_URL: https://dev.api.vezham.com
+          V_WIDGET_URL: https://preview.widgets.vezham.com

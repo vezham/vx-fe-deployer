@@ -1,14 +1,48 @@
-name: daily-build/widgets | schedule
+name: 🕒 widgets | daily-build | schedule
 
 on:
   schedule:
-    - cron: '30 23 * * 0,3,5'
+    - cron: '30 23 * * 0,3,5' # every Mon, Thu, Sat at 05:00 AM IST
+  workflow_dispatch:
+
+run-name: >
+  🚀 BnD • ${{
+      github.event_name == 'schedule' && '🕒 Scheduled •' ||
+      github.event_name == 'workflow_dispatch' && '⚡ Trails •'
+  }} widgets | daily-build - by @${{ github.actor || 'vx/ci' }}
+
+permissions:
+  contents: write
+  statuses: write
+  issues: write
 
 jobs:
-  # v0xFE-apps-widgets
-  chat_widget:
-    name: scheduler | chat_widget
-    uses: vezham/vx-fe-deployer/.github/workflows/chat_widget.yml@timeline
+  apps:
+    name: Resolve widgets apps
+    runs-on: ubuntu-latest
+    outputs:
+      deployments: ${{ steps.apps.outputs.deployments }}
+    steps:
+      - name: action | list widgets apps
+        id: apps
+        uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
+        with:
+          CONFIG_REPO: vezham/vx-fe-deployer
+          CONFIG_REF: ${{ github.sha }}
+          CATEGORY: widgets
+
+  production:
+    name: 🕒 ${{ matrix.app }} | production${{ matrix.target != 'default' && format(' | {0}', matrix.target) || '' }}
+    needs: apps
+    if: ${{ needs.apps.outputs.deployments != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.apps.outputs.deployments) }}
+    uses: vezham/vx-fe-deployer/.github/workflows/web-app.yml@timeline
     secrets: inherit
     with:
-      CALLER: scheduler
+      APP: ${{ matrix.app }}
+      APP_ENV: production
+      USE_LATEST_PRODUCTION: true
+      PRODUCTION_TARGET: ${{ matrix.target }}

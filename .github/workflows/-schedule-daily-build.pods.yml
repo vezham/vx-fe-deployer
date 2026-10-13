@@ -1,28 +1,48 @@
-name: daily-build/pods | schedule
+name: 🕒 pods | daily-build | schedule
 
 on:
   schedule:
-    - cron: '30 23 * * 0,3,5'
+    - cron: '30 23 * * 0,3,5' # every Mon, Thu, Sat at 05:00 AM IST
+  workflow_dispatch:
+
+run-name: >
+  🚀 BnD • ${{
+      github.event_name == 'schedule' && '🕒 Scheduled •' ||
+      github.event_name == 'workflow_dispatch' && '⚡ Trails •'
+  }} pods | daily-build - by @${{ github.actor || 'vx/ci' }}
+
+permissions:
+  contents: write
+  statuses: write
+  issues: write
 
 jobs:
-  # v0xFE-apps-pods
-  accounts:
-    name: scheduler | accounts
-    uses: vezham/vx-fe-deployer/.github/workflows/accounts.yml@timeline
-    secrets: inherit
-    with:
-      CALLER: scheduler
+  apps:
+    name: Resolve pods apps
+    runs-on: ubuntu-latest
+    outputs:
+      deployments: ${{ steps.apps.outputs.deployments }}
+    steps:
+      - name: action | list pods apps
+        id: apps
+        uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
+        with:
+          CONFIG_REPO: vezham/vx-fe-deployer
+          CONFIG_REF: ${{ github.sha }}
+          CATEGORY: pods
 
-  business:
-    name: scheduler | business
-    uses: vezham/vx-fe-deployer/.github/workflows/business.yml@timeline
+  production:
+    name: 🕒 ${{ matrix.app }} | production${{ matrix.target != 'default' && format(' | {0}', matrix.target) || '' }}
+    needs: apps
+    if: ${{ needs.apps.outputs.deployments != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.apps.outputs.deployments) }}
+    uses: vezham/vx-fe-deployer/.github/workflows/web-app.yml@timeline
     secrets: inherit
     with:
-      CALLER: scheduler
-
-  iam:
-    name: scheduler | iam
-    uses: vezham/vx-fe-deployer/.github/workflows/iam.yml@timeline
-    secrets: inherit
-    with:
-      CALLER: scheduler
+      APP: ${{ matrix.app }}
+      APP_ENV: production
+      USE_LATEST_PRODUCTION: true
+      PRODUCTION_TARGET: ${{ matrix.target }}

@@ -206,7 +206,7 @@ tracking adds a separate row, status context and URL set for each target. The ce
 issue remains one journal per app, with target-specific entries and latest successful
 SHA selection. Existing unqualified Production entries belong only to `default`.
 The CDN scheduler expands each app's actual target list into a deployment matrix;
-other category schedulers retain their previous implementations until migration.
+All six category schedulers use registry discovery and the same shared Production flow.
 
 The resolver emits only public values and secret **names**. The caller forwards its
 available Actions secrets through a reusable-workflow secret input. The build action
@@ -266,8 +266,29 @@ generation logic lives in `vx-deployer`; adding an app requires no routing job.
 The CDN scheduler discovers enabled `cdns` entries automatically and rebuilds
 each app/target's latest successful Production SHA independently. Targets without
 a successful journal entry are skipped, with no fallback to another target or timeline. Set `enabled: false` to exclude
-an app from manual and scheduled deployment. Other category schedulers retain
-their existing implementations until migrated.
+an app from manual and scheduled deployment. Internals, Platforms, Pods, Suites
+and Widgets use the same discovery and per-target journal selection as CDNs.
+
+## Synced legacy settings and review archives
+
+All 21 legacy Firebase app wrappers and their helpers have registry entries.
+Deployment profiles and credential names were checked against the wrappers;
+existing planned source repositories, normalized app paths, promotion paths and
+Chat Widget's five regional credentials were preserved. App-specific env values
+and secret references were carried over before archiving. No secret contents
+are stored in the registry.
+
+The 42 legacy web files are under `.github/workflows/todo-review/`. The 32 mock
+files are under `.github/workflows/todo/` and still need a separate Vercel migration.
+These nested directories are reference archives, not runnable workflows. The
+shared `web-app.yml`, `-promote.yml`, category schedulers and desktop workflows
+remain at the top level. App source repos still need their planned migration and
+caller updates; their files were not changed here.
+
+Every category scheduler now discovers registered apps and Production targets,
+rebuilds each target's latest successful journal SHA, and skips targets with no
+Production history. Existing cron times are unchanged. Archived wrappers are no
+longer referenced by active schedulers.
 
 ## Migration targets
 
@@ -281,8 +302,9 @@ need the source-side migration before their callers use the shared workflow.
 Existing per-environment credential secret names are preserved, including shared
 TVA credentials in the playground workflows and the Home-to-Playground mappings.
 Old `live` credentials map to `production`. The Static CDN mapping is unchanged.
-Old wrappers and category schedulers remain available during source migration;
-native desktop and Vercel mock apps are excluded.
+Legacy web wrappers and helpers are retained in `.github/workflows/todo-review/`
+for source migration review. Mock workflows are retained in `.github/workflows/todo/`
+and are excluded from the Firebase registry. Native desktop workflows remain active.
 
 | Old workflow / app                        | Registry app ID   | Planned app path                 |
 | ----------------------------------------- | ----------------- | -------------------------------- |
@@ -309,18 +331,22 @@ native desktop and Vercel mock apps are excluded.
 | `chat_widget.yml` / `chat_widget`         | `chat-widget`     | `apps-widgets/chat-widget`       |
 
 The shared flow sets `V_APP_NAME`, `V_APP_ENV`, `V_RELEASE_CHANNEL`, `V_IS_DEBUG`
-and, for Production, `V_PRODUCTION_TARGET`. Configure these legacy differences
-using the per-app fields described below before switching source callers:
+and, for Production, `V_PRODUCTION_TARGET`. The legacy settings are synced;
+source-specific build requirements still need review before switching callers:
 
-- Accounts, Business, IAM and HQ previously passed API, IAM, account, business,
-  HQ and sandbox URLs and flags. Chat Widget passed API and widget URLs.
-- Playground, Playbook and Home previously passed mock/API URL inputs.
+- Accounts, Business, IAM and HQ API URLs and sandbox flags are synced into app
+  `values` and `environments`. Identical settings use shared YAML aliases.
+  Chat Widget keeps its regional Production credentials and all five targets;
+  non-Production API and widget URLs are synced from the legacy wrapper.
+- Books, Playground, Playbook and Home mock/API URL bindings are synced.
+  Optional values omitted in the legacy workflow remain empty strings.
 - Storybook SB used the Storybook project and `storybook-sb` Firebase config,
-  plus a Figma access-token secret. Its new registry entry expects a separate
+  plus a Figma access-token secret, now mapped as
+  `V_STORYBOOK_FIGMA_ACCESS_TOKEN: STORYBOOK_SB_TVA_FIGMA_AT`. Its registry entry expects a separate
   `storybook-sb` app with the standard Nx targets and deploy config.
-- Chat Widget had US/EU/IN/AU production jobs using one credential secret.
-  The baseline registry still records one Production deployment. Add explicit
-  `production_targets` before replacing those regional jobs.
+- Chat Widget previously had US/EU/IN/AU Production jobs sharing one credential.
+  Its registry now has US/EU/IN/AU/SG targets with separate credential names.
+  Those explicit mappings remain unchanged by this sync.
 
 Each migrated source app must provide a Node runtime declaration in its app or
 workspace `package.json`, a pnpm package-manager declaration, standard Nx build
@@ -341,9 +367,11 @@ registry versions.
 
 Publish `vx-deployer` to `timeline` before publishing this refactor in
 `vx-fe-deployer`, so the new shared actions/workflow exist when callers run.
-Publish the shared `vx-fe-deployer` workflow before updating source-repository
-callers to use it directly. Remove old per-app deployer wrappers after their
-callers have migrated. Desktop workflows are outside this implementation.
+Coordinate this archive change with source-repository caller updates. The
+shared `vx-fe-deployer` workflow already exists; update old source callers to use
+it before publishing removal of their top-level per-app workflow paths. The snapshots in `todo-review/` and `todo/` are inactive reference files;
+reusable workflows must remain at the top level to run. Desktop workflows are
+outside this implementation.
 
 ## Validation
 
