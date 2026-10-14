@@ -1,4 +1,5 @@
-name: web-app | deployer
+name: 🚀 Web app • Deployer
+
 on:
   workflow_call:
     inputs:
@@ -26,12 +27,15 @@ on:
         description: Known app journal issue for scheduled lookup
         type: string
         default: ''
+
 concurrency:
   group: web-app-${{ inputs.APP }}-${{ github.repository }}-${{ inputs.CALLER != '' && 'tva' || inputs.APP_ENV }}-${{ inputs.PRODUCTION_TARGET || 'default' }}
   cancel-in-progress: false
   queue: max
+
 jobs:
   resolve:
+    name: 🔎 Resolve deployment settings & source
     if: ${{ inputs.CALLER == '' || inputs.CALLER == 'timeline' || inputs.CALLER == '-scheduler' }}
     runs-on: ubuntu-latest
     outputs:
@@ -50,7 +54,7 @@ jobs:
       journal_issue: ${{ steps.source.outputs.journal_issue }}
       category: ${{ steps.app.outputs.category }}
     steps:
-      - name: action | resolve app settings
+      - name: 🟠 · 🔎 Resolve app settings
         id: app
         uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
         with:
@@ -60,7 +64,7 @@ jobs:
           CALLER: ${{ inputs.CALLER }}
           APP_ENV: ${{ inputs.APP_ENV }}
           PRODUCTION_TARGET: ${{ inputs.PRODUCTION_TARGET }}
-      - name: action | resolve and validate deployment source
+      - name: 🟠 · ✅ Resolve & validate deployment source
         id: source
         uses: vezham/vx-deployer/.github/actions/deployment/prepare-web-deployment@timeline
         with:
@@ -80,8 +84,9 @@ jobs:
       group: deployment-journal-${{ github.repository }}-${{ inputs.APP }}
       cancel-in-progress: false
       queue: max
+
   deploy:
-    name: ${{ needs.resolve.outputs.track_environment }}${{ needs.resolve.outputs.production_target != '' && needs.resolve.outputs.production_target != 'default' && format(' | {0}', needs.resolve.outputs.production_target) || '' }} | dc
+    name: 🚀 ${{ needs.resolve.outputs.track_environment }}${{ needs.resolve.outputs.production_target != '' && needs.resolve.outputs.production_target != 'default' && format(' | {0}', needs.resolve.outputs.production_target) || '' }} | dc
     needs: resolve
     if: ${{ needs.resolve.outputs.git_ref != '' }}
     uses: vezham/vx-deployer/.github/workflows/web-app.yml@timeline

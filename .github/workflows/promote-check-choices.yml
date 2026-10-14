@@ -1,4 +1,6 @@
-name: Check promotion app choices
+name: 🧭 Check promotion choices
+
+run-name: 🧭 Promotion choices • ${{ github.event_name == 'workflow_dispatch' && '⚡ Trails' || github.event.head_commit.message || github.ref_name }} - by @${{ github.actor || 'vx/ci' }}
 
 on:
   pull_request:
@@ -20,8 +22,10 @@ permissions:
 
 jobs:
   check:
+    name: 🧭 Check promotion app choices
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Check generated promotion app choices
+      - name: 🟠 · 🧰 Checkout registry
+        uses: actions/checkout@v4
+      - name: 🟠 · 🧭 Check generated promotion choices
         uses: vezham/vx-deployer/.github/actions/deployment/sync-promote-choices@timeline

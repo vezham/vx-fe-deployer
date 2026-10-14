@@ -72,6 +72,20 @@ The central promotion dispatcher and unified scheduler also grant Issues write
 for journal updates and Actions read for deployment-result metadata. Validation and deployment mint separate source App tokens;
 tokens and credential values are never passed as job outputs.
 
+## Workflow display names
+
+Only step names use the QA color prefixes: `🟠 ·` identifies shared action calls;
+`🔵 ·` identifies local scripts, inline GitHub scripts and local calls. A second icon
+describes the work, such as `🧰` checkout, `🔐` authentication, `🏗️` build,
+`🚀` deployment or `🧾` tracking. Use `🔥` for Firebase-specific steps. Workflow,
+job and composite action titles keep descriptive names and task icons without
+the color prefixes.
+
+Run names identify scheduled execution with `🕒 Scheduled` and manual execution
+with `⚡ Trails`, and include the actor. Promotion runs also include app, destination,
+Production target when present and source SHA. IDs, artifact names, status contexts
+and concurrency groups remain independent of these display labels.
+
 ## TVA from source repositories and forks
 
 Automatic TVA builds derive the checkout repository from the calling workflow's

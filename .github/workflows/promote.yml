@@ -1,5 +1,6 @@
 name: 🚀 Promote
-run-name: Promote ${{ inputs.APP }} | ${{ inputs.APP_ENV }}${{ inputs.PRODUCTION_TARGET != '' && format(' | {0}', inputs.PRODUCTION_TARGET) || '' }} | ${{ inputs.GIT_SHA }}
+
+run-name: 🚀 Promote • ⚡ Trails • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}${{ inputs.PRODUCTION_TARGET != '' && format(' | {0}', inputs.PRODUCTION_TARGET) || '' }} | ${{ inputs.GIT_SHA }} - by @${{ github.actor || 'vx/ci' }}
 
 on:
   workflow_dispatch:
@@ -59,7 +60,7 @@ permissions:
 
 jobs:
   promote:
-    name: ${{ inputs.APP }} | promote
+    name: 🚀 Promote • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}
     uses: ./.github/workflows/web-app.yml
     secrets: inherit
     with:

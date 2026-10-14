@@ -1,15 +1,15 @@
-name: 🕒 build | schedule
-
-on:
-  schedule:
-    - cron: '30 23 * * *' # every day at 05:00 AM IST; app cadence comes from the registry
-  workflow_dispatch:
+name: 🕒 Scheduled builds
 
 run-name: >
   🚀 BnD • ${{
       github.event_name == 'schedule' && '🕒 Scheduled •' ||
       github.event_name == 'workflow_dispatch' && '⚡ Trails •'
   }} scheduled-build - by @${{ github.actor || 'vx/ci' }}
+
+on:
+  schedule:
+    - cron: '30 23 * * *' # every day at 05:00 AM IST; app cadence comes from the registry
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -24,12 +24,12 @@ concurrency:
 
 jobs:
   apps:
-    name: Resolve scheduled apps
+    name: 🔎 Resolve due apps & targets
     runs-on: ubuntu-latest
     outputs:
       batches: ${{ steps.apps.outputs.batches }}
     steps:
-      - name: action | list all scheduled apps
+      - name: 🟠 · 📅 Select scheduled apps & batches
         id: apps
         uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
         with:
@@ -40,7 +40,7 @@ jobs:
           JOURNAL_REPO: vezham/vx-fe-deployer
 
   production:
-    name: 🕒 Production batch ${{ matrix.index }} | ${{ matrix.count }} targets
+    name: 🕒 Production batch ${{ matrix.index }} • ${{ matrix.count }} targets
     needs: apps
     if: ${{ needs.apps.outputs.batches != '[]' }}
     strategy:
