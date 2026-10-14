@@ -1,0 +1,51 @@
+name: 🚀 Promote | Pods
+
+run-name: 🚀 Promote | Pods • ⚡ Trails • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}${{ inputs.APP_ENV == 'production' && (inputs.PRODUCTION_TARGET != '' && format(' | {0}', inputs.PRODUCTION_TARGET) || ' | all targets') || '' }} | ${{ inputs.GIT_SHA }} - by @${{ github.actor || 'vx/ci' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      GIT_SHA:
+        description: Full 40-character commit SHA in the selected app's source repository
+        required: true
+        type: string
+      APP:
+        description: Application ID from the pods registry category
+        required: true
+        # vx-bot/INFO: Generated app choices from web-apps.yaml; do not edit.
+        type: choice
+        options:
+          - accounts
+          - business
+          - iam
+        # vx-bot/INFO: End generated app choices.
+      APP_ENV:
+        description: Destination environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - preview
+          - production
+      PRODUCTION_TARGET:
+        description: 'Production only: enter one target, or leave empty to promote all configured targets'
+        type: string
+        required: false
+
+permissions:
+  contents: write
+  statuses: write
+  issues: write
+  actions: read
+
+jobs:
+  promote:
+    name: 🚀 Promote • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}
+    uses: ./.github/workflows/promote.yml
+    secrets: inherit
+    with:
+      APP: ${{ inputs.APP }}
+      GIT_SHA: ${{ inputs.GIT_SHA }}
+      APP_ENV: ${{ inputs.APP_ENV }}
+      PRODUCTION_TARGET: ${{ inputs.PRODUCTION_TARGET }}

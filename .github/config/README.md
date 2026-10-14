@@ -30,8 +30,8 @@ are configured; there is no automatic credential fallback between environments.
 Keep one registry with shared `defaults` and top-level app groups. The group
 determines the scheduler category: `apps` maps to `apps`, `apps-cdns` to `cdns`,
 and similarly for the other groups. App entries have no `category` field.
-Promotion lookup and dropdown generation search every group by globally unique
-app ID. Duplicate IDs, including disabled entries, are rejected.
+Promotion lookup searches every group by globally unique app ID; manual
+entry dropdowns filter by their fixed category. Duplicate IDs, including disabled entries, are rejected.
 
 ```yaml
 schema: 2
@@ -329,20 +329,53 @@ Use manual promotion for an immediate deployment outside an app's schedule.
 3. Install Vezham Deployer on the source repository and configure the required
    credential secrets and HeroUI token in the applicable caller repositories.
 
-Manual promotion offers enabled registry app IDs in the `promote.yml` dropdown,
-then accepts the full source SHA and destination. The dropdown is generated from
-this registry; do not maintain app options by hand. After adding, removing or
-disabling an app, regenerate and commit the workflow alongside the registry:
+## Category promotion entrypoints
+
+Choose a category workflow in the Actions sidebar, then select its app, full source
+SHA, destination and optional Production target. There is one thin manual workflow
+per category; dropdowns contain only enabled apps from that registry group:
+
+| Manual workflow         | Registry group   | Dropdown scope |
+| ----------------------- | ---------------- | -------------- |
+| `promote-apps.yml`      | `apps`           | Books, Demo    |
+| `promote-cdns.yml`      | `apps-cdns`      | Static CDN     |
+| `promote-internals.yml` | `apps-internals` | Internal apps  |
+| `promote-platforms.yml` | `apps-platforms` | Platform apps  |
+| `promote-pods.yml`      | `apps-pods`      | Pod apps       |
+| `promote-suites.yml`    | `apps-suites`    | Suite apps     |
+| `promote-widgets.yml`   | `apps-widgets`   | Widget apps    |
+
+All entrypoints call `promote.yml`, which now has only `workflow_call`; select the
+category entrypoint for manual runs. Entry workflows have no target matrix or build
+logic. They forward `APP`, `GIT_SHA`, `APP_ENV` and `PRODUCTION_TARGET` only.
+The registry derives category and deployment settings from the globally unique
+`APP`. Apps still follow their own `promotion_path`. Category-specific dropdowns
+organize the manual form; API dispatch accepts any valid registry app ID.
+
+For Production, empty target input promotes the selected SHA to all configured
+targets; an explicit ID selects one. Dev/QA/Preview remain one deployment. The shared
+engine caps parallel targets at five and calls the existing `web-app.yml`, retaining
+credentials, configuration, order checks, tracking and monthly history.
+
+App choices are generated from the registry, not maintained by hand. After adding,
+removing, moving or disabling an app, regenerate all category choices from this repo:
 
 ```sh
 bash ../vx-deployer/.github/actions/deployment/resolve-web-app/bin/setup.sh
-node ../vx-deployer/.github/actions/deployment/resolve-web-app/bin/sync-choices.cjs \
-  .github/config/web-apps.yaml .github/workflows/promote.yml write
+ALL_CATEGORIES=true REGISTRY_PATH=.github/config/web-apps.yaml \
+  WORKFLOW_DIRECTORY=.github/workflows MODE=write \
+  node ../vx-deployer/.github/actions/deployment/resolve-web-app/bin/sync-choices.cjs
 ```
 
-`promote-check-choices.yml` checks registry and promotion-workflow changes on pull
-requests and pushes to `timeline`. A stale dropdown fails the check. Shared
-generation logic lives in `vx-deployer`; adding an app requires no routing job.
+`promote-check-choices.yml` watches registry and `promote*.yml` changes on pull
+requests and pushes to `timeline`. It checks every category dropdown,
+shared workflow routing and input forwarding. Stale options fail without writing.
+A category with enabled apps must have its entry workflow; remove a workflow when
+its category has no enabled apps. Creating a new supported category requires an entry
+workflow and a registry group. No per-app routing jobs are needed.
+
+Publish `vx-deployer` first, so the generator changes are available,
+then publish the category entry workflows and reusable engine in `vx-fe-deployer`.
 
 ## Scheduled Production execution
 
@@ -458,7 +491,8 @@ are stored in the registry.
 The 42 legacy web files are under `.github/workflows/todo-review/`. The 32 mock
 files are under `.github/workflows/todo/` and still need a separate Vercel migration.
 These nested directories are reference archives, not runnable workflows. The
-shared `web-app.yml`, `promote.yml`, unified scheduler and desktop workflows
+shared `web-app.yml`, reusable `promote.yml`, category promotion entrypoints,
+unified scheduler and desktop workflows
 remain at the top level. App source repos still need their planned migration and
 caller updates; their files were not changed here.
 
