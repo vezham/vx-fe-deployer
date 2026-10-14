@@ -4,15 +4,15 @@ on:
   pull_request:
     paths:
       - .github/config/web-apps.yaml
-      - .github/workflows/-promote.yml
-      - .github/workflows/check-promote-choices.yml
+      - .github/workflows/promote.yml
+      - .github/workflows/promote-check-choices.yml
   push:
     branches:
       - timeline
     paths:
       - .github/config/web-apps.yaml
-      - .github/workflows/-promote.yml
-      - .github/workflows/check-promote-choices.yml
+      - .github/workflows/promote.yml
+      - .github/workflows/promote-check-choices.yml
   workflow_dispatch:
 
 permissions:

@@ -41,9 +41,12 @@
         },
         "secret_values": {
           "$ref": "#/definitions/secretValues"
+        },
+        "schedule": {
+          "$ref": "#/definitions/schedule"
         }
       },
-      "required": ["environments"],
+      "required": ["environments", "schedule"],
       "additionalProperties": false
     },
     "apps": {
@@ -205,6 +208,9 @@
           },
           "additionalProperties": false,
           "description": "Optional app-specific Production destinations. Each has its own credentials and overrides. Omit for a single Production deployment."
+        },
+        "schedule": {
+          "$ref": "#/definitions/appSchedule"
         }
       },
       "required": ["repository", "path", "credential_secrets"],
@@ -326,6 +332,96 @@
       },
       "additionalProperties": false,
       "required": ["credential_secret"]
+    },
+    "schedule": {
+      "type": "object",
+      "description": "Calendar schedule in Asia/Kolkata at the shared 05:00 trigger. Complete app rules replace the default cadence. Days 29–31 skip months without that day.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Disable automatic rebuilds only; manual promotion remains available."
+        },
+        "frequency": {
+          "type": "string",
+          "enum": ["daily", "weekly", "monthly"]
+        },
+        "days": {
+          "type": "array",
+          "items": {
+            "enum": ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+          },
+          "minItems": 1,
+          "maxItems": 7,
+          "uniqueItems": true
+        },
+        "day": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31
+        }
+      },
+      "required": ["frequency"],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "frequency": {
+              "const": "daily"
+            }
+          },
+          "not": {
+            "anyOf": [
+              {
+                "required": ["days"]
+              },
+              {
+                "required": ["day"]
+              }
+            ]
+          }
+        },
+        {
+          "properties": {
+            "frequency": {
+              "const": "weekly"
+            }
+          },
+          "required": ["days"],
+          "not": {
+            "required": ["day"]
+          }
+        },
+        {
+          "properties": {
+            "frequency": {
+              "const": "monthly"
+            }
+          },
+          "required": ["day"],
+          "not": {
+            "required": ["days"]
+          }
+        }
+      ]
+    },
+    "appSchedule": {
+      "description": "Omit to inherit defaults.schedule. A full rule replaces the cadence; enabled alone toggles scheduled rebuilds.",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/schedule"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          },
+          "required": ["enabled"],
+          "additionalProperties": false
+        }
+      ]
     }
   },
   "minProperties": 3

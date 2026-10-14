@@ -222,6 +222,58 @@ target uses `vx/deploy/firebase/<app path>.json`. It is copied to root `firebase
 after deploy-config generation. The selected credential identifies the Firebase project.
 Each Production target rebuilds the selected SHA with its configuration.
 
+## Per-app rebuild schedules
+
+The common `schedule-build.yaml` wakes every day at 05:00 IST. `defaults.schedule`
+sets the app cadence; the baseline retains Monday, Thursday and Saturday builds.
+An app can replace that cadence independently of category and `promotion_path`:
+
+```yaml
+defaults:
+  schedule:
+    frequency: weekly
+    days: [mon, thu, sat]
+  # environments, values and secret_values
+
+apps-cdns:
+  static-cdn:
+    schedule:
+      frequency: daily
+    # repository, path and credential_secrets
+
+apps:
+  books:
+    schedule:
+      frequency: monthly
+      day: 1
+    # repository, path and credential_secrets
+  demo:
+    schedule:
+      enabled: false
+    # repository, path and credential_secrets
+```
+
+These app overrides are examples, not changes to the registered apps. Omit an app's
+`schedule` to inherit the default. A full app rule replaces the frequency and its
+calendar fields; it does not retain weekly `days` when changing to daily or monthly.
+The `enabled` flag inherits independently and defaults to true. An enabled-only
+app override changes that flag without replacing the default cadence. Disabling
+scheduled rebuilds leaves TVA, manual promotion and promotion dropdowns available.
+
+Weekly rules require unique lowercase weekdays (`sun` through `sat`). Monthly
+rules require `day: 1` through `31`; dates absent from a month are skipped, so use
+1–28 for a rebuild every month. Rules contain only fields relevant to their frequency.
+All of an app's Production targets follow its app schedule and retain their own
+latest successful SHAs and build configuration.
+
+Both cron and manual scheduler runs select apps due on the workflow run's creation
+date in `Asia/Kolkata`. The resolver reads that timestamp with Actions read permission,
+so runner delays, queued runs and reruns retain the original run date. Date selection
+occurs before journal discovery and batching. An empty selection skips deployment.
+There is no automatic catch-up for a date when GitHub did not create a run. GitHub
+schedules can be delayed or dropped; see the [schedule event documentation](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+Use manual promotion for an immediate deployment outside an app's schedule.
+
 ## Add an app
 
 1. Add an app under its top-level group (`apps`, `apps-cdns`, `apps-internals`,
@@ -248,7 +300,7 @@ Each Production target rebuilds the selected SHA with its configuration.
 3. Install Vezham Deployer on the source repository and configure the required
    credential secrets and HeroUI token in the applicable caller repositories.
 
-Manual promotion offers enabled registry app IDs in the `-promote.yml` dropdown,
+Manual promotion offers enabled registry app IDs in the `promote.yml` dropdown,
 then accepts the full source SHA and destination. The dropdown is generated from
 this registry; do not maintain app options by hand. After adding, removing or
 disabling an app, regenerate and commit the workflow alongside the registry:
@@ -256,14 +308,16 @@ disabling an app, regenerate and commit the workflow alongside the registry:
 ```sh
 bash ../vx-deployer/.github/actions/deployment/resolve-web-app/bin/setup.sh
 node ../vx-deployer/.github/actions/deployment/resolve-web-app/bin/sync-choices.cjs \
-  .github/config/web-apps.yaml .github/workflows/-promote.yml write
+  .github/config/web-apps.yaml .github/workflows/promote.yml write
 ```
 
-`check-promote-choices.yml` checks registry and promotion-workflow changes on pull
+`promote-check-choices.yml` checks registry and promotion-workflow changes on pull
 requests and pushes to `timeline`. A stale dropdown fails the check. Shared
 generation logic lives in `vx-deployer`; adding an app requires no routing job.
 
-The common `-schedule-daily-build.yaml` discovers scheduled targets across all
+## Scheduled Production execution
+
+The common `schedule-build.yaml` discovers due targets across all
 seven registry groups and runs one batch at a time. Each batch contains at most
 100 targets and runs at most five app/target deployments in parallel, with
 `fail-fast: false` and category labels in each deployment name.
@@ -271,8 +325,8 @@ It rebuilds that target's latest successful Production SHA from the journal. Tar
 without a successful entry are skipped; there is no fallback to another target or
 timeline. Set `enabled: false` to exclude an app from manual and scheduled deployment.
 
-The schedule is Mon/Thu/Sat at 05:00 AM IST (`30 23 * * 0,3,5` UTC), with a manual
-trigger for review and testing. This workflow replaces the six category scheduler
+The daily wake-up is 05:00 AM IST (`30 23 * * *` UTC), with a manual
+trigger that applies the same app schedule filter. Shared defaults retain Mon/Thu/Sat rebuilds. This workflow replaces the six category scheduler
 files. Dated temporary CDN test cron entries are removed during consolidation.
 
 ## Scheduling 150+ apps
@@ -347,14 +401,14 @@ are stored in the registry.
 The 42 legacy web files are under `.github/workflows/todo-review/`. The 32 mock
 files are under `.github/workflows/todo/` and still need a separate Vercel migration.
 These nested directories are reference archives, not runnable workflows. The
-shared `web-app.yml`, `-promote.yml`, unified scheduler and desktop workflows
+shared `web-app.yml`, `promote.yml`, unified scheduler and desktop workflows
 remain at the top level. App source repos still need their planned migration and
 caller updates; their files were not changed here.
 
 The unified scheduler reads the app journal directory once, skips apps with no
 journal, and passes the known issue number into each target rebuild. Source SHA
 selection happens under the existing per-target deployment lock, using the journal
-index. Targets with no successful Production history are skipped. The regular cron time is unchanged. Archived wrappers are not referenced
+index. Targets with no successful Production history are skipped. The daily wake-up time is 05:00 IST; inherited app rebuilds retain Mon/Thu/Sat. Archived wrappers are not referenced
 by the active scheduler.
 
 ## Migration targets

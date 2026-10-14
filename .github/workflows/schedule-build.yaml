@@ -1,15 +1,15 @@
-name: 🕒 daily-build | schedule
+name: 🕒 build | schedule
 
 on:
   schedule:
-    - cron: '30 23 * * 0,3,5' # every Mon, Thu, Sat at 05:00 AM IST
+    - cron: '30 23 * * *' # every day at 05:00 AM IST; app cadence comes from the registry
   workflow_dispatch:
 
 run-name: >
   🚀 BnD • ${{
       github.event_name == 'schedule' && '🕒 Scheduled •' ||
       github.event_name == 'workflow_dispatch' && '⚡ Trails •'
-  }} daily-build - by @${{ github.actor || 'vx/ci' }}
+  }} scheduled-build - by @${{ github.actor || 'vx/ci' }}
 
 permissions:
   contents: write
@@ -36,6 +36,7 @@ jobs:
           CONFIG_REPO: vezham/vx-fe-deployer
           CONFIG_REF: ${{ github.sha }}
           ALL_APPS: 'true'
+          SCHEDULED_ONLY: 'true'
           JOURNAL_REPO: vezham/vx-fe-deployer
 
   production:

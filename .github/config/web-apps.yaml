@@ -1,6 +1,9 @@
 # yaml-language-server: $schema=../../vx/schemas/web-apps.json
 schema: 2
 defaults:
+  schedule:
+    frequency: weekly
+    days: [mon, thu, sat]
   environments:
     tva:
       build_environment: dev
@@ -31,6 +34,8 @@ defaults:
 # Optional production_targets belong to each app; omit for one default Production deployment.
 # vx-bot/INFO: Optional per-app promotion_path skips stages, e.g. [tva, preview, production].
 # Omit promotion_path to keep the full TVA → Dev → QA → Preview → Production order.
+# Omit schedule to inherit defaults.schedule; a complete app rule replaces the cadence.
+# Examples: {frequency: daily}, {frequency: monthly, day: 1}, {enabled: false}.
 
 apps:
   books:
