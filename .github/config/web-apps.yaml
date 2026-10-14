@@ -64,6 +64,9 @@ apps:
 
 apps-cdns:
   static-cdn:
+    schedule:
+      frequency: weekly
+      days: [mon, wed, thu, sat] # Wednesday added for testing
     promotion_path: [tva, dev, production]
     repository: vezham/vx-fe-apps-cdns
     path: apps-cdns/static-cdn
