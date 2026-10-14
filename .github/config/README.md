@@ -203,8 +203,8 @@ passed to Dev, QA, Preview or TVA are rejected before deployment.
 Every target follows the same app `promotion_path`; Production/US and Production/EU
 both require the preceding configured stage for the same app and SHA. Source commit
 tracking adds a separate row, status context and URL set for each target. The central
-issue remains one journal per app, with target-specific entries and latest successful
-SHA selection. Existing unqualified Production entries belong only to `default`.
+state index remains one closed issue per app, with target-specific latest successful
+SHA selection. History is grouped into monthly category issues. Existing unqualified Production entries belong only to `default`.
 The unified scheduler expands enabled apps across all category groups, including
 `apps`, into bounded target batches. Each batch uses the same shared Production flow.
 
@@ -346,23 +346,22 @@ excluded. The discovery job scans the central issue directory once and attaches
 canonical app journal IDs. Apps with no journal at discovery wait until a later run;
 there is no fallback to `timeline` or a different app's deployment.
 
-The app journal issue body stores a current-state index for each environment and
-Production target, with latest attempt and latest successful deployment. Comments
-retain attempt history. Known journal IDs allow one issue GET to select the SHA;
+The closed app state issue body stores a current-state index for each environment and
+Production target, with latest attempt and latest successful deployment. Monthly category issues retain attempt history in comments. Known journal IDs allow one issue GET to select the SHA;
 indexed reads do not scan historical comments. Legacy journals are read once to
 bootstrap the index under the per-app journal lock. Regions retain separate state.
 A failed or cancelled attempt preserves the latest successful SHA and URLs.
 
 The build job uploads one small public `result.json` artifact, retained for seven
 days. Only its numeric ID crosses the job boundary: provider masking can suppress
-URLs passed as job outputs. The journal job checks the artifact belongs to this run
-and downloads it by name with a filtered lookup. It never downloads build output or
+URLs passed as job outputs. The monthly preparation and state writer jobs check the artifact belongs to this run
+and download it by name with a filtered lookup. It never downloads build output or
 credentials. Rerunning a failed journal job records the original deployment attempt;
 expired metadata requires rerunning the deployment.
 
-Journal writes run in a separate job, serialized per app. The resolver's bootstrap
+State writes run in a separate job, serialized per app. The resolver's bootstrap
 job uses the same lock. `queue: max` keeps pending regional writes from cancelling
-each other. An append intent is persisted before writing the history comment; if
+each other. An append intent and monthly issue number are persisted before writing the history comment; if
 an append or final index update is interrupted, the next locked read/write recovers
 that intent before exposing a successful SHA. Read-only callers fail on an unfinished
 intent instead of attempting repair without write permission. The issue body is
@@ -388,6 +387,35 @@ Local actionlint 1.7.12 does not recognize `queue`. Validate those concurrency f
 against the documented schema and use a narrow ignore for that known parser gap;
 all other actionlint checks remain enabled. Publish `vx-deployer` first, then the
 controller workflow changes in `vx-fe-deployer`, before testing the new scheduler.
+
+## Monthly category history
+
+Read deployment history in `Deployment log | <category> | <YYYY-MM>`, for example
+`Deployment log | cdns | 2026-10`. Each entry names the app, environment/target,
+source SHA, status, completion time, actor, run and deployment URLs. Dev, QA, Preview
+and Production promotions and rebuilds are included; TVA remains on source commits.
+Use the automatic `deployment-history:<category>` issue label to find category logs.
+
+The first recorded deployment for a month creates its issue. When a new category
+month is created, older open monthly issues for that category close automatically.
+Grouping uses UTC deployment completion time; schedule selection still uses IST.
+Late entries and journal-only retries go to the original completion month, even
+when that issue is closed. A retry of an older month leaves newer months open.
+
+The existing per-app issue is retained as a closed `Deployment state | <app>` index.
+Its current-state table links to monthly history, and its earlier comments remain
+unchanged. The scheduler continues reading that stable index directly, so monthly
+rotation and failures never erase a target's latest successful SHA. Apps receive
+this closed state presentation on their next index write. Nothing migrates or
+rewrites historical deployment comments.
+
+Monthly issue creation/rotation runs under a short category lock in a separate
+preparation job. App index writes and pending recovery keep their existing per-app
+lock. Concurrent app comments do not overwrite one another. Durable pending records
+include the destination monthly issue; recovery searches older monthly pages if
+other apps have appended since an interrupted write. Indexed reads remain constant
+in size as monthly history grows. Publish the shared actions/workflow in
+`vx-deployer` before the category forwarding change in `vx-fe-deployer`.
 
 ## Synced legacy settings and review archives
 

@@ -1,5 +1,4 @@
 name: web-app | deployer
-
 on:
   workflow_call:
     inputs:
@@ -27,13 +26,10 @@ on:
         description: Known app journal issue for scheduled lookup
         type: string
         default: ''
-
-# Selection and deployment share a lock so schedules cannot rebuild a stale SHA.
 concurrency:
   group: web-app-${{ inputs.APP }}-${{ github.repository }}-${{ inputs.CALLER != '' && 'tva' || inputs.APP_ENV }}-${{ inputs.PRODUCTION_TARGET || 'default' }}
   cancel-in-progress: false
   queue: max
-
 jobs:
   resolve:
     if: ${{ inputs.CALLER == '' || inputs.CALLER == 'timeline' || inputs.CALLER == '-scheduler' }}
@@ -52,6 +48,7 @@ jobs:
       values: ${{ steps.app.outputs.values }}
       secret_values: ${{ steps.app.outputs.secret_values }}
       journal_issue: ${{ steps.source.outputs.journal_issue }}
+      category: ${{ steps.app.outputs.category }}
     steps:
       - name: action | resolve app settings
         id: app
@@ -63,7 +60,6 @@ jobs:
           CALLER: ${{ inputs.CALLER }}
           APP_ENV: ${{ inputs.APP_ENV }}
           PRODUCTION_TARGET: ${{ inputs.PRODUCTION_TARGET }}
-
       - name: action | resolve and validate deployment source
         id: source
         uses: vezham/vx-deployer/.github/actions/deployment/prepare-web-deployment@timeline
@@ -84,7 +80,6 @@ jobs:
       group: deployment-journal-${{ github.repository }}-${{ inputs.APP }}
       cancel-in-progress: false
       queue: max
-
   deploy:
     name: ${{ needs.resolve.outputs.track_environment }}${{ needs.resolve.outputs.production_target != '' && needs.resolve.outputs.production_target != 'default' && format(' | {0}', needs.resolve.outputs.production_target) || '' }} | dc
     needs: resolve
@@ -110,3 +105,4 @@ jobs:
       BUILD_SECRET_VALUES: ${{ needs.resolve.outputs.secret_values }}
       JOURNAL_ISSUE: ${{ needs.resolve.outputs.journal_issue }}
       IS_REBUILD: ${{ inputs.USE_LATEST_PRODUCTION }}
+      CATEGORY: ${{ needs.resolve.outputs.category }}
