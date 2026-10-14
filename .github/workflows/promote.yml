@@ -1,4 +1,4 @@
-name: 🚀 Promote | Shared
+name: Promote | Shared
 
 run-name: 🚀 Promote • ⚡ Trails • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}${{ inputs.APP_ENV == 'production' && (inputs.PRODUCTION_TARGET != '' && format(' | {0}', inputs.PRODUCTION_TARGET) || ' | all targets') || '' }} | ${{ inputs.GIT_SHA }} - by @${{ github.actor || 'vx/ci' }}
 

@@ -1,4 +1,4 @@
-name: 🚀 Web app • Deployer
+name: Web app • Deployer
 
 on:
   workflow_call:

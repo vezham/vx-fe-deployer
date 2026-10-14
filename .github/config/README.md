@@ -492,8 +492,8 @@ The 42 legacy web files are under `.github/workflows/todo-review/`. The 32 mock
 files are under `.github/workflows/todo/` and still need a separate Vercel migration.
 These nested directories are reference archives, not runnable workflows. The
 shared `web-app.yml`, reusable `promote.yml`, category promotion entrypoints,
-unified scheduler and desktop workflows
-remain at the top level. App source repos still need their planned migration and
+and unified scheduler remain at the top level. The six legacy desktop workflows
+are in `.github/workflows/todo-desktop/` for the native desktop rewrite. App source repos still need their planned migration and
 caller updates; their files were not changed here.
 
 The unified scheduler reads the app journal directory once, skips apps with no
@@ -516,7 +516,8 @@ TVA credentials in the playground workflows and the Home-to-Playground mappings.
 Old `live` credentials map to `production`. The Static CDN mapping is unchanged.
 Legacy web wrappers and helpers are retained in `.github/workflows/todo-review/`
 for source migration review. Mock workflows are retained in `.github/workflows/todo/`
-and are excluded from the Firebase registry. Native desktop workflows remain active.
+and are excluded from the Firebase registry. Legacy desktop workflows are archived
+in `.github/workflows/todo-desktop/` and are inactive until the native desktop rewrite.
 
 | Old workflow / app                        | Registry app ID   | Planned app path                 |
 | ----------------------------------------- | ----------------- | -------------------------------- |

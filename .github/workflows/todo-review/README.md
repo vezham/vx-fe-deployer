@@ -13,5 +13,6 @@ Before switching a source caller, complete its repository/path migration and
 standard Nx build/deploy-generation targets. Storybook SB previously built the
 Storybook project with separate prebuild/build scripts; its planned standalone
 app must provide the standard targets before deployment. Optional legacy API
-inputs that were unset are kept as empty values for review. Desktop remains
-outside this migration.
+inputs that were unset are kept as empty values for review. The legacy desktop
+workflows and TVA implementation are archived separately in
+[todo-desktop](../todo-desktop/README.md) for the native desktop rewrite.
