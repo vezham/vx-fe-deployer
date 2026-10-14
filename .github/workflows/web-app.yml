@@ -23,11 +23,16 @@ on:
       PRODUCTION_TARGET:
         description: App-specific Production target; omit for a single Production deployment
         type: string
+      JOURNAL_ISSUE:
+        description: Known app journal issue for scheduled lookup
+        type: string
+        default: ''
 
 # Selection and deployment share a lock so schedules cannot rebuild a stale SHA.
 concurrency:
   group: web-app-${{ inputs.APP }}-${{ github.repository }}-${{ inputs.CALLER != '' && 'tva' || inputs.APP_ENV }}-${{ inputs.PRODUCTION_TARGET || 'default' }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
   resolve:
@@ -46,6 +51,7 @@ jobs:
       production_target: ${{ steps.app.outputs.production_target }}
       values: ${{ steps.app.outputs.values }}
       secret_values: ${{ steps.app.outputs.secret_values }}
+      journal_issue: ${{ steps.source.outputs.journal_issue }}
     steps:
       - name: action | resolve app settings
         id: app
@@ -73,6 +79,11 @@ jobs:
           APP_CLIENT_ID: ${{ vars.SOURCE_APP_CLIENT_ID }}
           APP_PRIVATE_KEY: ${{ secrets.SOURCE_APP_PRIVATE_KEY }}
           PRODUCTION_TARGET: ${{ steps.app.outputs.production_target }}
+          JOURNAL_ISSUE: ${{ inputs.JOURNAL_ISSUE }}
+    concurrency:
+      group: deployment-journal-${{ github.repository }}-${{ inputs.APP }}
+      cancel-in-progress: false
+      queue: max
 
   deploy:
     name: ${{ needs.resolve.outputs.track_environment }}${{ needs.resolve.outputs.production_target != '' && needs.resolve.outputs.production_target != 'default' && format(' | {0}', needs.resolve.outputs.production_target) || '' }} | dc
@@ -97,3 +108,5 @@ jobs:
       PRODUCTION_TARGET: ${{ needs.resolve.outputs.production_target }}
       BUILD_VALUES: ${{ needs.resolve.outputs.values }}
       BUILD_SECRET_VALUES: ${{ needs.resolve.outputs.secret_values }}
+      JOURNAL_ISSUE: ${{ needs.resolve.outputs.journal_issue }}
+      IS_REBUILD: ${{ inputs.USE_LATEST_PRODUCTION }}

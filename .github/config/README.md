@@ -68,8 +68,8 @@ TVA → Dev → QA → Preview → Production for the same app and full SHA. App
 shorten that path explicitly, independently of their category.
 
 TVA inherits Contents/Commit statuses write permissions from its source caller.
-The central promotion dispatcher and category scheduler also grant Issues write
-for journal updates. Validation and deployment mint separate source App tokens;
+The central promotion dispatcher and unified scheduler also grant Issues write
+for journal updates and Actions read for deployment-result metadata. Validation and deployment mint separate source App tokens;
 tokens and credential values are never passed as job outputs.
 
 ## TVA from source repositories and forks
@@ -205,8 +205,8 @@ both require the preceding configured stage for the same app and SHA. Source com
 tracking adds a separate row, status context and URL set for each target. The central
 issue remains one journal per app, with target-specific entries and latest successful
 SHA selection. Existing unqualified Production entries belong only to `default`.
-The CDN scheduler expands each app's actual target list into a deployment matrix;
-All six category schedulers use registry discovery and the same shared Production flow.
+The unified scheduler expands enabled apps across all category groups, including
+`apps`, into bounded target batches. Each batch uses the same shared Production flow.
 
 The resolver emits only public values and secret **names**. The caller forwards its
 available Actions secrets through a reusable-workflow secret input. The build action
@@ -263,11 +263,77 @@ node ../vx-deployer/.github/actions/deployment/resolve-web-app/bin/sync-choices.
 requests and pushes to `timeline`. A stale dropdown fails the check. Shared
 generation logic lives in `vx-deployer`; adding an app requires no routing job.
 
-The CDN scheduler discovers enabled `cdns` entries automatically and rebuilds
-each app/target's latest successful Production SHA independently. Targets without
-a successful journal entry are skipped, with no fallback to another target or timeline. Set `enabled: false` to exclude
-an app from manual and scheduled deployment. Internals, Platforms, Pods, Suites
-and Widgets use the same discovery and per-target journal selection as CDNs.
+The common `-schedule-daily-build.yaml` discovers scheduled targets across all
+seven registry groups and runs one batch at a time. Each batch contains at most
+100 targets and runs at most five app/target deployments in parallel, with
+`fail-fast: false` and category labels in each deployment name.
+It rebuilds that target's latest successful Production SHA from the journal. Targets
+without a successful entry are skipped; there is no fallback to another target or
+timeline. Set `enabled: false` to exclude an app from manual and scheduled deployment.
+
+The schedule is Mon/Thu/Sat at 05:00 AM IST (`30 23 * * 0,3,5` UTC), with a manual
+trigger for review and testing. This workflow replaces the six category scheduler
+files. Dated temporary CDN test cron entries are removed during consolidation.
+
+## Scheduling 150+ apps
+
+The scheduler remains one entry workflow. Shared batching and validation live in
+`vx-deployer`, in `scheduled-web-apps.yml` and `deployment/prepare-scheduled-batch`.
+For 150 apps with five targets each, 750 targets become eight batches (seven of
+100 and one of 50). The outer matrix runs one batch at a time; the inner matrix
+runs five deployments at a time. A workflow concurrency group queues overlapping
+scheduled/manual runs, keeping the rebuild cap at five per scheduler run. Manual
+promotions and other repository workflows share the account's runner capacity.
+
+Batch validation checks target identity, duplicates, issue numbers, per-batch size,
+outer matrix size and serialized output size. More than 256 batches or an output
+above the job budget fails with a clear message before execution. Disabled apps are
+excluded. The discovery job scans the central issue directory once and attaches
+canonical app journal IDs. Apps with no journal at discovery wait until a later run;
+there is no fallback to `timeline` or a different app's deployment.
+
+The app journal issue body stores a current-state index for each environment and
+Production target, with latest attempt and latest successful deployment. Comments
+retain attempt history. Known journal IDs allow one issue GET to select the SHA;
+indexed reads do not scan historical comments. Legacy journals are read once to
+bootstrap the index under the per-app journal lock. Regions retain separate state.
+A failed or cancelled attempt preserves the latest successful SHA and URLs.
+
+The build job uploads one small public `result.json` artifact, retained for seven
+days. Only its numeric ID crosses the job boundary: provider masking can suppress
+URLs passed as job outputs. The journal job checks the artifact belongs to this run
+and downloads it by name with a filtered lookup. It never downloads build output or
+credentials. Rerunning a failed journal job records the original deployment attempt;
+expired metadata requires rerunning the deployment.
+
+Journal writes run in a separate job, serialized per app. The resolver's bootstrap
+job uses the same lock. `queue: max` keeps pending regional writes from cancelling
+each other. An append intent is persisted before writing the history comment; if
+an append or final index update is interrupted, the next locked read/write recovers
+that intent before exposing a successful SHA. Read-only callers fail on an unfinished
+intent instead of attempting repair without write permission. The issue body is
+bounded; very large numbers of destinations within one app require splitting that
+app's state, while 150 apps with five targets each keep independent small indexes.
+
+Routine rebuilds pass `IS_REBUILD: true`, record `kind: rebuild` in the journal,
+and update the current-state index. They do not create source promotion statuses
+or modify the promotion comment. TVA and manual promotions keep their existing
+tracking. Latest rebuild URLs and times are in the journal; source comments show
+TVA and promotion results. Existing promotion-order checks still apply to rebuilds.
+
+Journal/discovery API clients honor primary quota resets and secondary retry-after
+responses, with bounded retries. Authorization errors fail immediately. For a large
+first-time legacy migration, history bootstrap can wait for API quota, after which
+normal reads use the index. Large runs can still take hours, including API quota
+waits and runner queues; five deployments is a scheduler cap, not reserved account
+capacity. Source repositories still need their build migration,
+credentials and GitHub App access before live deployment.
+
+The queue syntax follows [GitHub's concurrency documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
+Local actionlint 1.7.12 does not recognize `queue`. Validate those concurrency fields
+against the documented schema and use a narrow ignore for that known parser gap;
+all other actionlint checks remain enabled. Publish `vx-deployer` first, then the
+controller workflow changes in `vx-fe-deployer`, before testing the new scheduler.
 
 ## Synced legacy settings and review archives
 
@@ -281,14 +347,15 @@ are stored in the registry.
 The 42 legacy web files are under `.github/workflows/todo-review/`. The 32 mock
 files are under `.github/workflows/todo/` and still need a separate Vercel migration.
 These nested directories are reference archives, not runnable workflows. The
-shared `web-app.yml`, `-promote.yml`, category schedulers and desktop workflows
+shared `web-app.yml`, `-promote.yml`, unified scheduler and desktop workflows
 remain at the top level. App source repos still need their planned migration and
 caller updates; their files were not changed here.
 
-Every category scheduler now discovers registered apps and Production targets,
-rebuilds each target's latest successful journal SHA, and skips targets with no
-Production history. Existing cron times are unchanged. Archived wrappers are no
-longer referenced by active schedulers.
+The unified scheduler reads the app journal directory once, skips apps with no
+journal, and passes the known issue number into each target rebuild. Source SHA
+selection happens under the existing per-target deployment lock, using the journal
+index. Targets with no successful Production history are skipped. The regular cron time is unchanged. Archived wrappers are not referenced
+by the active scheduler.
 
 ## Migration targets
 

@@ -1,0 +1,53 @@
+name: 🕒 daily-build | schedule
+
+on:
+  schedule:
+    - cron: '30 23 * * 0,3,5' # every Mon, Thu, Sat at 05:00 AM IST
+  workflow_dispatch:
+
+run-name: >
+  🚀 BnD • ${{
+      github.event_name == 'schedule' && '🕒 Scheduled •' ||
+      github.event_name == 'workflow_dispatch' && '⚡ Trails •'
+  }} daily-build - by @${{ github.actor || 'vx/ci' }}
+
+permissions:
+  contents: write
+  statuses: write
+  issues: write
+  actions: read
+
+concurrency:
+  group: scheduled-web-apps-${{ github.repository }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  apps:
+    name: Resolve scheduled apps
+    runs-on: ubuntu-latest
+    outputs:
+      batches: ${{ steps.apps.outputs.batches }}
+    steps:
+      - name: action | list all scheduled apps
+        id: apps
+        uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
+        with:
+          CONFIG_REPO: vezham/vx-fe-deployer
+          CONFIG_REF: ${{ github.sha }}
+          ALL_APPS: 'true'
+          JOURNAL_REPO: vezham/vx-fe-deployer
+
+  production:
+    name: 🕒 Production batch ${{ matrix.index }} | ${{ matrix.count }} targets
+    needs: apps
+    if: ${{ needs.apps.outputs.batches != '[]' }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include: ${{ fromJSON(needs.apps.outputs.batches) }}
+    uses: vezham/vx-deployer/.github/workflows/scheduled-web-apps.yml@timeline
+    secrets: inherit
+    with:
+      DEPLOYMENTS: ${{ matrix.deployments }}
