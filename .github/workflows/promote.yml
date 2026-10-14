@@ -1,6 +1,6 @@
 name: 🚀 Promote
 
-run-name: 🚀 Promote • ⚡ Trails • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}${{ inputs.PRODUCTION_TARGET != '' && format(' | {0}', inputs.PRODUCTION_TARGET) || '' }} | ${{ inputs.GIT_SHA }} - by @${{ github.actor || 'vx/ci' }}
+run-name: 🚀 Promote • ⚡ Trails • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}${{ inputs.APP_ENV == 'production' && (inputs.PRODUCTION_TARGET != '' && format(' | {0}', inputs.PRODUCTION_TARGET) || ' | all targets') || '' }} | ${{ inputs.GIT_SHA }} - by @${{ github.actor || 'vx/ci' }}
 
 on:
   workflow_dispatch:
@@ -48,7 +48,7 @@ on:
           - preview
           - production
       PRODUCTION_TARGET:
-        description: Production target from this app’s production_targets; leave empty for single Production
+        description: 'Production only: enter one target, or leave empty to promote all configured targets'
         type: string
         required: false
 
@@ -59,12 +59,35 @@ permissions:
   actions: read
 
 jobs:
+  resolve:
+    name: 🔎 Resolve promotion targets
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.app.outputs.promotion_targets }}
+    steps:
+      - name: 🟠 · 🔎 Resolve app promotion targets
+        id: app
+        uses: vezham/vx-deployer/.github/actions/deployment/resolve-web-app@timeline
+        with:
+          CONFIG_REPO: vezham/vx-fe-deployer
+          CONFIG_REF: ${{ github.sha }}
+          APP: ${{ inputs.APP }}
+          APP_ENV: ${{ inputs.APP_ENV }}
+          PRODUCTION_TARGET: ${{ inputs.PRODUCTION_TARGET }}
+          EXPAND_PROMOTION_TARGETS: 'true'
+
   promote:
-    name: 🚀 Promote • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}
+    name: 🚀 Promote • ${{ inputs.APP }} | ${{ inputs.APP_ENV }}${{ matrix.target != '' && matrix.target != 'default' && format(' | {0}', matrix.target) || '' }}
+    needs: resolve
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        target: ${{ fromJSON(needs.resolve.outputs.targets) }}
     uses: ./.github/workflows/web-app.yml
     secrets: inherit
     with:
       GIT_SHA: ${{ inputs.GIT_SHA }}
       APP: ${{ inputs.APP }}
       APP_ENV: ${{ inputs.APP_ENV }}
-      PRODUCTION_TARGET: ${{ inputs.PRODUCTION_TARGET }}
+      PRODUCTION_TARGET: ${{ matrix.target }}

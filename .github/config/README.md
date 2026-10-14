@@ -209,10 +209,25 @@ apps-platforms:
 ```
 
 Other apps can use different targets or omit the map entirely. `PRODUCTION_TARGET`
-is a text input on the common dispatcher; enter a target listed for the selected app.
-Leave it empty for single Production, or when the app explicitly defines a `default`
-target. Named-only maps require an explicit selection. Unknown targets and targets
-passed to Dev, QA, Preview or TVA are rejected before deployment.
+is an optional text input on the common promotion dispatcher. For Production,
+leave it empty to promote the selected SHA to every configured target of that app.
+Apps without a target map still receive one `default` Production deployment. A map
+containing both `default` and named targets includes all of them when left empty.
+Enter a configured target ID to promote only to that destination.
+
+The dispatcher validates the complete target selection before starting a matrix,
+then calls the existing shared deployment workflow once per target. Each retains
+its credentials, build values, promotion-order checks, deployment lock, source
+tracker row and journal state. Up to five targets run at once, with fail-fast disabled
+so one failed target does not cancel the others. The run's overall result still
+reports failures. An empty Production target is displayed as `all targets` in the
+run name; each deployment job displays its actual target.
+
+Dev, QA and Preview still run one deployment. Leave `PRODUCTION_TARGET` empty for
+those environments; region inputs there are rejected. Unknown Production targets,
+disabled apps, invalid target settings and destinations omitted from the app's
+promotion path fail validation. Schedule-day filtering applies only to scheduled
+rebuilds, not manual promotion.
 
 Every target follows the same app `promotion_path`; Production/US and Production/EU
 both require the preceding configured stage for the same app and SHA. Source commit
