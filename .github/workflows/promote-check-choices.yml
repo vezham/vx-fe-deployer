@@ -1,6 +1,11 @@
 name: Check promotion choices
 
-run-name: 🧭 Promotion choices • ${{ github.event_name == 'workflow_dispatch' && '⚡ Trails' || github.event.head_commit.message || github.ref_name }} - by @${{ github.actor || 'vx/ci' }}
+run-name: >
+  🧭 Promotion choices • ${{
+    github.event_name == 'workflow_dispatch' && '⚡ Trails' ||
+    github.event_name == 'pull_request' && '🔀 PR' ||
+    '📤 Push'
+  }} - by @${{ github.actor || 'vx/ci' }}
 
 on:
   pull_request:
