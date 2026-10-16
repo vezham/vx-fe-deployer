@@ -36,6 +36,7 @@ env:
   ENTRY_POINT: ./apps/demo
   VX_APP_PATH: apps/demo
   VX_APP_NAME: demo
+  NX_NO_CLOUD: true
 
 jobs:
   bnd:

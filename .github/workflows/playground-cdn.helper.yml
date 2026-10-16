@@ -36,6 +36,7 @@ env:
   ENTRY_POINT: ./apps-internals/playground-cdn
   VX_APP_PATH: apps-internals/playground-cdn
   VX_APP_NAME: playground-cdn
+  NX_NO_CLOUD: true
 
 jobs:
   bnd:
