@@ -38,6 +38,32 @@ defaults:
 # Examples: {frequency: daily}, {frequency: monthly, day: 1}, {enabled: false}.
 
 apps:
+# vx-fe-apps
+  demo:
+    repository: vezham/vx-fe-apps
+    path: apps/demo
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_APP_DEV_GCP_SA_KEY
+      qa: PLAYGROUND_APP_QA_GCP_SA_KEY
+      preview: PLAYGROUND_APP_PREVIEW_GCP_SA_KEY
+      production: PLAYGROUND_APP_LIVE_GCP_SA_KEY
+
+  tamizhi:
+    repository: vezham/vx-fe-apps
+    path: apps/tamizhi
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+    # values:
+    #   V_BASE_API_URL: api
+    #   V_MOCK_API_URL: ''
+    #   V_APP_API_URL: ''
+
+# vx-fe-apps-business
   school-os:
     repository: vezham/vx-fe-apps-business
     path: apps/school-os
@@ -65,16 +91,6 @@ apps:
       V_BASE_API_URL: api
       V_MOCK_API_URL: ''
       V_APP_API_URL: ''
-
-  demo:
-    repository: vezham/vx-fe-apps
-    path: apps/demo
-    credential_secrets:
-      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      dev: PLAYGROUND_APP_DEV_GCP_SA_KEY
-      qa: PLAYGROUND_APP_QA_GCP_SA_KEY
-      preview: PLAYGROUND_APP_PREVIEW_GCP_SA_KEY
-      production: PLAYGROUND_APP_LIVE_GCP_SA_KEY
 
 apps-cdns:
   static-cdn:
