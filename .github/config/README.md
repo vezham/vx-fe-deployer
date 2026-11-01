@@ -25,11 +25,16 @@ Static CDN deliberately retains `PLAYGROUND_DOCS_TVA_GCP_SA_KEY` for every
 environment. Change its `credential_secrets` entries when the separate projects
 are configured; there is no automatic credential fallback between environments.
 
+Developers uses `vezham/vx-docs-internal` at `apps-docs/developers` and shares
+`PLAYGROUND_DOCS_TVA_GCP_SA_KEY` across environments. It inherits the default
+promotion order and rebuild schedule. Its source trigger already calls the shared
+`web-app.yml`; no app-specific job is needed in that workflow.
+
 ## Category groups
 
 Keep one registry with shared `defaults` and top-level app groups. The group
 determines the scheduler category: `apps` maps to `apps`, `apps-cdns` to `cdns`,
-and similarly for the other groups. App entries have no `category` field.
+`apps-docs` to `docs`, and similarly for the other groups. App entries have no `category` field.
 Promotion lookup searches every group by globally unique app ID; manual
 entry dropdowns filter by their fixed category. Duplicate IDs, including disabled entries, are rejected.
 
@@ -380,7 +385,7 @@ then publish the category entry workflows and reusable engine in `vx-fe-deployer
 ## Scheduled Production execution
 
 The common `schedule-build.yaml` discovers due targets across all
-seven registry groups and runs one batch at a time. Each batch contains at most
+registry groups and runs one batch at a time. Each batch contains at most
 100 targets and runs at most five app/target deployments in parallel, with
 `fail-fast: false` and category labels in each deployment name.
 It rebuilds that target's latest successful Production SHA from the journal. Targets

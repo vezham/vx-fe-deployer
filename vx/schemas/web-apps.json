@@ -57,6 +57,10 @@
       "$ref": "#/definitions/appGroup",
       "description": "cdns web applications."
     },
+    "apps-docs": {
+      "$ref": "#/definitions/appGroup",
+      "description": "docs web applications."
+    },
     "apps-internals": {
       "$ref": "#/definitions/appGroup",
       "description": "internals web applications."

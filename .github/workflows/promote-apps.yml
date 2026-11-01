@@ -17,6 +17,8 @@ on:
         options:
           - books
           - demo
+          - school-os
+          - tamizhi
         # vx-bot/INFO: End generated app choices.
       APP_ENV:
         description: Destination environment

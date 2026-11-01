@@ -107,6 +107,17 @@ apps-cdns:
       preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
       production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
 
+apps-docs:
+  developers:
+    repository: vezham/vx-docs-internal
+    path: apps-docs/developers
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+
 apps-internals:
   home:
     repository: vezham/vx-fe-apps-internals
