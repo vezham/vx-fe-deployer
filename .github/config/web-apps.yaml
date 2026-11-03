@@ -63,6 +63,20 @@ apps:
     #   V_MOCK_API_URL: ''
     #   V_APP_API_URL: ''
 
+  tamizhi-test:
+    repository: vezham/vx-fe-pkgs
+    path: apps/tamizhi
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+    # values:
+    #   V_BASE_API_URL: api
+    #   V_MOCK_API_URL: ''
+    #   V_APP_API_URL: ''
+
 # vx-fe-apps-business
   school-os:
     repository: vezham/vx-fe-apps-business
