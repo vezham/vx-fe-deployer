@@ -19,6 +19,7 @@ on:
           - demo
           - school-os
           - tamizhi
+          - tamizhi-test
         # vx-bot/INFO: End generated app choices.
       APP_ENV:
         description: Destination environment

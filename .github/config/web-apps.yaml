@@ -65,6 +65,7 @@ apps:
 
   tamizhi-test:
     repository: vezham/vx-fe-pkgs
+    project: tamizhi
     path: apps/tamizhi
     credential_secrets:
       tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY

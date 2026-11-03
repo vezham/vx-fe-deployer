@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       app: ${{ steps.app.outputs.app }}
+      project: ${{ steps.app.outputs.project }}
       repository: ${{ steps.app.outputs.repository }}
       path: ${{ steps.app.outputs.path }}
       track_environment: ${{ steps.app.outputs.track_environment }}
@@ -97,6 +98,7 @@ jobs:
       BUILD_SECRETS: ${{ toJSON(secrets) }}
     with:
       APP_NAME: ${{ needs.resolve.outputs.app }}
+      PROJECT: ${{ needs.resolve.outputs.project }}
       GIT_REPO: ${{ needs.resolve.outputs.repository }}
       APP_PATH: ${{ needs.resolve.outputs.path }}
       GIT_REF: ${{ needs.resolve.outputs.git_ref }}

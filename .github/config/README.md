@@ -56,6 +56,30 @@ apps-internals:
     # repository, path, credential_secrets
 ```
 
+## Deployment IDs and Nx projects
+
+Registry IDs identify deployments independently of their Nx project names. For a
+clone with its own credentials, source tracking and promotion history, use a unique
+registry ID and set `project` to the existing Nx project:
+
+```yaml
+apps:
+  tamizhi-test:
+    repository: vezham/vx-fe-pkgs
+    project: tamizhi
+    path: apps/tamizhi
+    # credential_secrets: destination secret names
+```
+
+Omit `project` when it matches the registry ID. The build action uses the resolved
+project for `deploy:generate` and `build`. The registry ID remains the identity for
+promotion validation, comments, history, preview channels and `V_APP_NAME`.
+The source path and Firebase destination configuration are independent of the Nx
+project name. Distinct registry IDs do not isolate a shared Firebase live site;
+configure separate test destinations when the clone must deploy independently.
+
+Publish the shared `vx-deployer` changes before the controller changes.
+
 ## Workflow ownership
 
 Each app needs one source-repository trigger and one registry entry. The trigger
