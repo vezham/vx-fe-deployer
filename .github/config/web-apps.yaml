@@ -122,6 +122,48 @@ apps-cdns:
       preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
       production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
 
+  icons-cdn:
+    schedule:
+      frequency: weekly
+      days: [mon, wed, thu, sat] # Wednesday added for testing
+    promotion_path: [tva, dev, production]
+    repository: vezham/vx-fe-apps-cdns
+    path: apps-cdns/icons-cdn
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+
+  illustrations-cdn:
+    schedule:
+      frequency: weekly
+      days: [mon, wed, thu, sat] # Wednesday added for testing
+    promotion_path: [tva, dev, production]
+    repository: vezham/vx-fe-apps-cdns
+    path: apps-cdns/illustrations-cdn
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+
+  logos-cdn:
+    schedule:
+      frequency: weekly
+      days: [mon, wed, thu, sat] # Wednesday added for testing
+    promotion_path: [tva, dev, production]
+    repository: vezham/vx-fe-apps-cdns
+    path: apps-cdns/logos-cdn
+    credential_secrets:
+      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+
 apps-docs:
   developers:
     repository: vezham/vx-docs-internal
