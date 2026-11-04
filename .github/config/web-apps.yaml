@@ -120,7 +120,7 @@ apps-cdns:
       dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
       qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
       preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      production: STATIC_CDN_LIVE_GCP_SA_KEY
 
   icons-cdn:
     schedule:
@@ -130,11 +130,11 @@ apps-cdns:
     repository: vezham/vx-fe-apps-cdns
     path: apps-cdns/icons-cdn
     credential_secrets:
-      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      tva: ICONS_CDN_LIVE_GCP_SA_KEY
+      dev: ICONS_CDN_LIVE_GCP_SA_KEY
+      qa: ICONS_CDN_LIVE_GCP_SA_KEY
+      preview: ICONS_CDN_LIVE_GCP_SA_KEY
+      production: ICONS_CDN_LIVE_GCP_SA_KEY
 
   illustrations-cdn:
     schedule:
@@ -144,11 +144,11 @@ apps-cdns:
     repository: vezham/vx-fe-apps-cdns
     path: apps-cdns/illustrations-cdn
     credential_secrets:
-      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      tva: ILLUSTRATIONS_CDN_LIVE_GCP_SA_KEY
+      dev: ILLUSTRATIONS_CDN_LIVE_GCP_SA_KEY
+      qa: ILLUSTRATIONS_CDN_LIVE_GCP_SA_KEY
+      preview: ILLUSTRATIONS_CDN_LIVE_GCP_SA_KEY
+      production: ILLUSTRATIONS_CDN_LIVE_GCP_SA_KEY
 
   logos-cdn:
     schedule:
@@ -158,11 +158,39 @@ apps-cdns:
     repository: vezham/vx-fe-apps-cdns
     path: apps-cdns/logos-cdn
     credential_secrets:
-      tva: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      dev: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      qa: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      preview: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
-      production: PLAYGROUND_DOCS_TVA_GCP_SA_KEY
+      tva: LOGOS_CDN_LIVE_GCP_SA_KEY
+      dev: LOGOS_CDN_LIVE_GCP_SA_KEY
+      qa: LOGOS_CDN_LIVE_GCP_SA_KEY
+      preview: LOGOS_CDN_LIVE_GCP_SA_KEY
+      production: LOGOS_CDN_LIVE_GCP_SA_KEY
+
+  apps-cdn:
+    schedule:
+      frequency: weekly
+      days: [mon, wed, thu, sat] # Wednesday added for testing
+    promotion_path: [tva, dev, production]
+    repository: vezham/vx-fe-apps-cdns
+    path: apps-cdns/apps-cdn
+    credential_secrets:
+      tva: APPS_CDN_LIVE_GCP_SA_KEY
+      dev: APPS_CDN_LIVE_GCP_SA_KEY
+      qa: APPS_CDN_LIVE_GCP_SA_KEY
+      preview: APPS_CDN_LIVE_GCP_SA_KEY
+      production: APPS_CDN_LIVE_GCP_SA_KEY
+
+  mail-cdn:
+    schedule:
+      frequency: weekly
+      days: [mon, wed, thu, sat] # Wednesday added for testing
+    promotion_path: [tva, dev, production]
+    repository: vezham/vx-fe-apps-cdns
+    path: apps-cdns/mail-cdn
+    credential_secrets:
+      tva: MAIL_CDN_LIVE_GCP_SA_KEY
+      dev: MAIL_CDN_LIVE_GCP_SA_KEY
+      qa: MAIL_CDN_LIVE_GCP_SA_KEY
+      preview: MAIL_CDN_LIVE_GCP_SA_KEY
+      production: MAIL_CDN_LIVE_GCP_SA_KEY
 
 apps-docs:
   developers:
